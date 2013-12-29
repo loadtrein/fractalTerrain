@@ -158,6 +158,7 @@ static char *get_sprintf_buffer() {
 #include "../shaders/texture_shader.h"
 #include "../shaders/phong_shader.h"
 #include "../shaders/bump_shader.h"
+#include "../shaders/terrain_shader.h"
 
 #include "../physics/physics.h"
 
@@ -198,7 +199,9 @@ static char *get_sprintf_buffer() {
 #include "../resources/resources.inl"
 #include "../resources/mesh_builder.inl"
 
+// terrain headers
 #include "../terrain/terrain_util.h"
+#include "../terrain/terrain_noise.h"
 #include "../terrain/terrain_mesh_handler.h"
 
 

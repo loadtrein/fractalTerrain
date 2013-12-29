@@ -2,13 +2,17 @@ namespace octet {
 
 	class terrain_mesh_handler {
 		mesh t_mesh;
-		
+		int texture_1;
+		int texture_2; 
 
 	public:
 		terrain_mesh_handler() {}
 
 
-		void init() {}
+		void init(int texture_1_, int texture_2_) {
+			texture_1 = texture_1_; 
+			texture_2 = texture_2_; 
+		}
 
 
 		void create_mesh( Tile tiles[], int size) {
@@ -57,10 +61,20 @@ namespace octet {
 		}
 
 
-		void debugRender() {
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
-			glFrontFace(GL_CW);
+		void debugRender(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
+			// glEnable(GL_CULL_FACE);
+			// glCullFace(GL_BACK);
+			// glFrontFace(GL_CW);
+
+			mat4t modelToProjection = mat4t::build_projection_matrix(modelToWorld, cameraToWorld);
+
+			t_shader.render(modelToProjection, 0, 1); 
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture_1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, texture_2);
+
 
 			t_mesh.render(); 
 		}
