@@ -21,33 +21,33 @@ namespace octet {
 	class Landscape : public octet::app {
 		
 
-	  terrain_mesh_handler terrain_mesh_handler_;
+    terrain_mesh_handler terrain_mesh_handler_;
 
 	  mat4t cameraToWorld;
 
-      mat4t modelToWorld;
+    mat4t modelToWorld;
 
-      color_shader color_shader_;
+    color_shader color_shader_;
 	  
 	  // terrain shader
-	  terrain_shader terrain_shader_; 
+	  //terrain_shader terrain_shader_; 
 
 	  //phong_shader phong_shader_;
 
-      enum {   
-        Terrain_Width = 100,
-        Terrain_Length = 100,
-        SEGMENTS = 65,
-      };
+    enum {   
+      Terrain_Width = 100,
+      Terrain_Length = 100,
+      SEGMENTS = 65,
+    };
 
-      float randomLow;
-      float randomHigh;
-      bool debug;
+    float randomLow;
+    float randomHigh;
+    bool debug;
 
 
-      Point heightMap [SEGMENTS] [SEGMENTS];
+    Point heightMap [SEGMENTS] [SEGMENTS];
 
-      Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
+    Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
 
 
 
@@ -57,18 +57,18 @@ namespace octet {
 
     // this is called once OpenGL is initialized
     void app_init() {
-
-      color_shader_.init();
+    
+    color_shader_.init();
 
 	  // terrain shader init
-	  terrain_shader_.init(); 
+	  //terrain_shader_.init(); 
 
 	  // load textures 
 	  GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
 	  GLuint texture_sand	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
 
 	  //initialize terrain_mesh
-	  terrain_mesh_handler_.init(texture_grass, texture_sand); 
+	  //terrain_mesh_handler_.init(texture_grass, texture_sand); 
 
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
@@ -89,7 +89,7 @@ namespace octet {
       generateVerticesWireFrameModel();
 	  
 	  
-	  terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+	    //terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
 
     }
 
@@ -153,6 +153,63 @@ namespace octet {
       printf("\n");
     }
 
+    //---------------------------------SMOOTHING FILTER----------------------------------------------------------
+
+    //Apply 3x3 box filter with smoothing parameter
+    void smooth3x3BoxFilter(){
+
+      float k = 0.75;
+
+      for(int i=0; i!=SEGMENTS;++i){
+        for(int j=0; j!=SEGMENTS;++j){
+
+          float total = 0.0f;
+          float count = 0.0;
+
+          for (int u = -1; u <= 1; u++){
+            for (int v = -1; v <= 1; v++){
+
+              if((i+u) >= 0 && (i+u)<SEGMENTS && (j+v)>=0 && (j+v)<SEGMENTS){
+                if(u!=0 && v!=0){
+                  total +=  heightMap[i + u][j + v].getY();
+                  count++;
+                }
+              }
+
+            }
+          }
+          heightMap[i][j].setY((total / count)* (1-k) +  heightMap[i][j].getY() * k);
+        }
+      }
+
+    }
+
+    void smootFilterRowsColumnsDisplacement(){
+      float k = 0.75;
+
+      /* Rows, left to right */
+      for(int i = 1;i < SEGMENTS; i++)
+        for (int j = 0;j < SEGMENTS; j++)
+          heightMap[i][j].setY( heightMap[i-1][j].getY() * (1-k) + heightMap[i][j].getY() * k );
+
+      /* Rows, right to left*/
+      for(int i = SEGMENTS-2;i < -1; i--)
+        for (int j = 0;j < SEGMENTS; j++)
+          heightMap[i][j].setY( heightMap[i+1][j].getY() * (1-k) +  heightMap[i][j].getY() * k);
+
+      /* Columns, bottom to top */
+      for(int i = 0;i < SEGMENTS; i++)
+        for (int j = 1;j < SEGMENTS; j++)
+          heightMap[i][j].setY( heightMap[i][j-1].getY() * (1-k) +  heightMap[i][j].getY() * k);
+
+      /* Columns, top to bottom */
+      for(int i = 0;i < SEGMENTS; i++)
+        for (int j = SEGMENTS; j < -1; j--)
+          heightMap[i][j].setY( heightMap[i][j+1].getY() * (1-k) +  heightMap[i][j].getY() * k );
+    }
+
+
+    //---------------------------------DIAMOND SQUARE ALGORITHM--------------------------------------------------
 
     float getDiamondGeneratedValue(int row, int column, int distance, float rLow, float rHigh){
 
@@ -301,7 +358,6 @@ namespace octet {
           
     }
 
-
     void setPointsAsExistingValues(){
       for(int i=0; i!=SEGMENTS;++i){
         for(int j=0; j!=SEGMENTS;++j){
@@ -310,7 +366,6 @@ namespace octet {
       }
     }
 
-
     void setInitialCorners() 
     {
 
@@ -318,6 +373,12 @@ namespace octet {
       heightMap[0][SEGMENTS-1].setY( static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/10.0f)) );
       heightMap[SEGMENTS-1][0].setY( static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/10.0f)) );
       heightMap[SEGMENTS-1][SEGMENTS-1].setY( static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/10.0f)) );
+
+
+      /*heightMap[0][0].setY(0.1);
+      heightMap[0][SEGMENTS-1].setY(0.1);
+      heightMap[SEGMENTS-1][0].setY(0.1);
+      heightMap[SEGMENTS-1][SEGMENTS-1].setY(0.1);*/
     
     }
 
@@ -339,8 +400,8 @@ namespace octet {
 
 
     void setTerrainParameters(){
-      this->randomLow = -30.0;
-      this->randomHigh = 30.0f;
+      this->randomLow = -50.0;
+      this->randomHigh = 50.0f;
       this->debug = false;
     }
 
@@ -388,6 +449,18 @@ namespace octet {
         cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
       }
 
+      if(is_key_down(key_f1)){
+        printf("Rows and Columns Smoothed\n");
+        smootFilterRowsColumnsDisplacement();
+        generateVerticesWireFrameModel();
+      }
+
+      if(is_key_down(key_f2)){
+        printf("3x3 Box Smoothed\n");
+        smooth3x3BoxFilter();
+        generateVerticesWireFrameModel();
+      }
+
       if(is_key_down('G')){
 
         printf("Regenerating terrain...\n");
@@ -429,10 +502,11 @@ namespace octet {
 		// draw the Landscape
 		for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
 			renderMap(wireFrameVertices[i]);
-		} 
+		}
 
 		// draw the mesh
-		terrain_mesh_handler_.debugRender(terrain_shader_, modelToWorld, cameraToWorld); 
+		//terrain_mesh_handler_.debugRender(terrain_shader_, modelToWorld, cameraToWorld); 
+
     }
 
   };
