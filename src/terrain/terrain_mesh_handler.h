@@ -61,14 +61,22 @@ namespace octet {
 		}
 
 
-		void debugRender(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
+		void debugRender( /* terrain_shader */ terrain_new_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
 
 			mat4t modelToProjection = mat4t::build_projection_matrix(modelToWorld, cameraToWorld);
 
-			t_shader.render(modelToProjection, 0, 1); 
+			//
+			// t_shader.render(modelToProjection, 0, 1); 
+
+			
+			vec4 color_1(1, 0, 1, 1);
+			vec4 color_2(0, 0, 1, 1);
+
+			//new t_shader
+			t_shader.render_color(modelToProjection, color_1, color_2); 
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture_1);

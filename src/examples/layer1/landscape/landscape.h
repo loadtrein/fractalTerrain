@@ -23,16 +23,17 @@ namespace octet {
 
     terrain_mesh_handler terrain_mesh_handler_;
 
-	  mat4t cameraToWorld;
+	mat4t cameraToWorld;
 
     mat4t modelToWorld;
 
     color_shader color_shader_;
 	  
-	  // terrain shader
-	  //terrain_shader terrain_shader_; 
+	// terrain shader
+	// terrain_shader terrain_shader_; 
+	terrain_new_shader terrain_new_shader_;
 
-	  //phong_shader phong_shader_;
+	// phong_shader phong_shader_;
 
     enum {   
       Terrain_Width = 100,
@@ -62,6 +63,10 @@ namespace octet {
 
 	  // terrain shader init
 	  //terrain_shader_.init(); 
+	  
+	  terrain_new_shader_.init();
+
+	  
 
 	  // load textures 
 	  GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
@@ -89,7 +94,7 @@ namespace octet {
       generateVerticesWireFrameModel();
 	  
 	  
-	    //terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+	  terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
 
     }
 
@@ -506,7 +511,7 @@ namespace octet {
 		}
 
 		// draw the mesh
-		//terrain_mesh_handler_.debugRender(terrain_shader_, modelToWorld, cameraToWorld); 
+		terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
 
     }
 
