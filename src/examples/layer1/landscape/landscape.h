@@ -383,6 +383,8 @@ namespace octet {
     }
 
 
+    //-----------------------------------HEIGHT MAP INITIAL VALUES-----------------------------------------------
+
     void setHeightMapInitialValues(){
 
       float widhtIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
@@ -398,7 +400,6 @@ namespace octet {
 
     }
 
-
     void setTerrainParameters(){
       this->randomLow = -50.0;
       this->randomHigh = 50.0f;
@@ -408,7 +409,6 @@ namespace octet {
 
     void simulate() {
 
-      //Move camera
       if(is_key_down('D')){
         cameraToWorld.translate(1.5,0,0);
       }
@@ -461,6 +461,7 @@ namespace octet {
         generateVerticesWireFrameModel();
       }
 
+      //Regenerates terrain
       if(is_key_down('G')){
 
         printf("Regenerating terrain...\n");
