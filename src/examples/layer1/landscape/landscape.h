@@ -23,17 +23,19 @@ namespace octet {
 
     terrain_mesh_handler terrain_mesh_handler_;
 
-	mat4t cameraToWorld;
+	  mat4t cameraToWorld;
 
     mat4t modelToWorld;
 
     color_shader color_shader_;
 	  
-	// terrain shader
-	// terrain_shader terrain_shader_; 
-	terrain_new_shader terrain_new_shader_;
+	  // terrain shader
+	  // terrain_shader terrain_shader_; 
+	  terrain_new_shader terrain_new_shader_;
 
-	// phong_shader phong_shader_;
+	  //phong_shader phong_shader_;
+
+    PerlinNoiseGenerator perlinNoise;
 
     enum {   
       Terrain_Width = 100,
@@ -61,12 +63,10 @@ namespace octet {
     
     color_shader_.init();
 
-	  // terrain shader init
 	  //terrain_shader_.init(); 
 	  
-	  terrain_new_shader_.init();
+	  //terrain_new_shader_.init();
 
-	  
 
 	  // load textures 
 	  GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
@@ -94,7 +94,7 @@ namespace octet {
       generateVerticesWireFrameModel();
 	  
 	  
-	  terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+	    //terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
 
     }
 
@@ -158,7 +158,33 @@ namespace octet {
       printf("\n");
     }
 
-    //---------------------------------SMOOTHING FILTER----------------------------------------------------------
+    //------------------------------------PERTURBATION-----------------------------------------------------------
+
+    void perturbation(float f, float d){
+      int u, v;
+      
+      float temp [SEGMENTS][SEGMENTS];
+
+      for (int i = 0; i != SEGMENTS; ++i){
+        for (int j = 0; j != SEGMENTS; ++j){
+
+          u = i + (int)(perlinNoise.Noise(f * i / (float)SEGMENTS, f * j / (float)SEGMENTS, 0) * d);
+          v = j + (int)(perlinNoise.Noise(f * i / (float)SEGMENTS, f * j / (float)SEGMENTS, 1) * d);
+          if (u < 0) u = 0; if (u >= SEGMENTS) u = SEGMENTS - 1;
+          if (v < 0) v = 0; if (v >= SEGMENTS) v = SEGMENTS - 1;
+          temp[i][j]=heightMap[u][v].getY();
+
+        }
+      }
+
+      for (int i = 0; i != SEGMENTS; ++i){
+        for (int j = 0; j != SEGMENTS; ++j){
+          heightMap[i][j].setY(temp[i][j]);
+        }
+      }
+    }
+
+    //---------------------------------SMOOTHING FILTERS----------------------------------------------------------
 
     //Apply 3x3 box filter with smoothing parameter
     void smooth3x3BoxFilter(){
@@ -438,7 +464,6 @@ namespace octet {
         cameraToWorld.translate(0,-1.5,0);
       }
 
-      //Rotation of the l-system
       if(is_key_down('E')){
         cameraToWorld.rotateY(-2.0);
       }
@@ -463,6 +488,12 @@ namespace octet {
       if(is_key_down(key_f2)){
         printf("3x3 Box Smoothed\n");
         smooth3x3BoxFilter();
+        generateVerticesWireFrameModel();
+      }
+
+      if(is_key_down(key_f3)){
+        printf("PERTURBATION\n");
+        perturbation(10.0,10.0);
         generateVerticesWireFrameModel();
       }
 
@@ -511,7 +542,7 @@ namespace octet {
 		}
 
 		// draw the mesh
-		terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
+		//terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
 
     }
 

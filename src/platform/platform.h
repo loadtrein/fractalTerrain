@@ -204,6 +204,7 @@ static char *get_sprintf_buffer() {
 #include "../terrain/terrain_util.h"
 #include "../terrain/terrain_noise.h"
 #include "../terrain/terrain_mesh_handler.h"
+#include "../terrain/perlin_noise_generator.h"
 
 
 
