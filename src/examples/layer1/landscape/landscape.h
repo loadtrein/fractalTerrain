@@ -485,7 +485,7 @@ namespace octet {
     }
 
     void setTerrainParameters(){
-      this->randomLow = -50.0;
+      this->randomLow = -50.0f;
       this->randomHigh = 50.0f;
       this->debug = false;
     }
