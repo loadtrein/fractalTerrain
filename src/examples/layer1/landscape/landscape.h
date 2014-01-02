@@ -184,6 +184,59 @@ namespace octet {
       }
     }
 
+    //------------------------------------EROSION-----------------------------------------------------------------
+
+    void thermalErosion(float talus){
+      
+      for(int i=0; i!=SEGMENTS;++i){
+        for(int j=0; j!=SEGMENTS;++j){
+
+          float dmax = 0.0f;
+          float dtotal = 0.0;
+
+          for (int u = -1; u <= 1; u++){
+            for (int v = -1; v <= 1; v++){
+
+              if((i+u) >= 0 && (i+u)<SEGMENTS && (j+v)>=0 && (j+v)<SEGMENTS){
+                if(u!=0 || v!=0){
+
+                  float di = heightMap[i][j].getY() - heightMap[i+u][j+v].getY();
+
+                  if(di > talus){
+                    dtotal+=di;
+
+                    if(di > dmax){
+                      dmax = di;
+                    }
+                  } 
+                }
+              }
+
+            }
+          }
+
+          for (int u = -1; u <= 1; u++){
+            for (int v = -1; v <= 1; v++){
+
+              if((i+u) >= 0 && (i+u)<SEGMENTS && (j+v)>=0 && (j+v)<SEGMENTS){
+                if(u!=0 || v!=0){
+
+                  float di = heightMap[i][j].getY() - heightMap[i+u][j+v].getY();
+
+                  if(di > talus){
+                    heightMap[i+u][j+v].setY( heightMap[i+u][j+v].getY() + 0.3*(dmax - talus) * (di/dtotal));
+                  } 
+                }
+              }
+
+            }
+          }
+
+         
+        }
+      }
+    }
+
     //---------------------------------SMOOTHING FILTERS----------------------------------------------------------
 
     //Apply 3x3 box filter with smoothing parameter
@@ -201,7 +254,7 @@ namespace octet {
             for (int v = -1; v <= 1; v++){
 
               if((i+u) >= 0 && (i+u)<SEGMENTS && (j+v)>=0 && (j+v)<SEGMENTS){
-                if(u!=0 && v!=0){
+                if(u!=0 || v!=0){
                   total +=  heightMap[i + u][j + v].getY();
                   count++;
                 }
@@ -494,6 +547,12 @@ namespace octet {
       if(is_key_down(key_f3)){
         printf("PERTURBATION\n");
         perturbation(10.0,10.0);
+        generateVerticesWireFrameModel();
+      }
+
+      if(is_key_down(key_f4)){
+        printf("THERMAL EROSION\n");
+        thermalErosion(4/(float)SEGMENTS);
         generateVerticesWireFrameModel();
       }
 
