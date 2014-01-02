@@ -23,7 +23,8 @@ namespace octet {
 
     terrain_mesh_handler terrain_mesh_handler_;
 
-	  mat4t cameraToWorld;
+	 mat4t cameraToWorld;
+
 
     mat4t modelToWorld;
 
@@ -492,7 +493,10 @@ namespace octet {
 
 
     void simulate() {
+		keyboard();
+	}
 
+	void keyboard() {
       if(is_key_down('D')){
         cameraToWorld.translate(1.5,0,0);
       }
