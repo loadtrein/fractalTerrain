@@ -39,9 +39,9 @@ namespace octet {
     PerlinNoiseGenerator perlinNoise;
 
     enum {   
-      Terrain_Width = 100,
-      Terrain_Length = 100,
-      SEGMENTS = 65,
+      Terrain_Width = 200,
+      Terrain_Length = 200,
+      SEGMENTS = 128,
     };
 
     float randomLow;
@@ -53,7 +53,7 @@ namespace octet {
 
     Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
 
-
+    int renderMode;
 
   public:
 
@@ -62,19 +62,19 @@ namespace octet {
     // this is called once OpenGL is initialized
     void app_init() {
     
-    color_shader_.init();
+      color_shader_.init();
 
-	  //terrain_shader_.init(); 
+	    //terrain_shader_.init(); 
 	  
-	  //terrain_new_shader_.init();
+	    terrain_new_shader_.init();
 
 
-	  // load textures 
-	  GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
-	  GLuint texture_sand	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
+	    // load textures 
+	    GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
+	    GLuint texture_sand	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
 
-	  //initialize terrain_mesh
-	  //terrain_mesh_handler_.init(texture_grass, texture_sand); 
+	    //initialize terrain_mesh
+	    terrain_mesh_handler_.init(texture_grass, texture_sand); 
 
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
@@ -94,12 +94,11 @@ namespace octet {
 
       generateVerticesWireFrameModel();
 	  
-	  
-	    //terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+	    terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
 
     }
 
-    void renderMap(Tile tile){
+    void wireFrameRendering(Tile tile){
       mat4t modelToProjection = mat4t::build_projection_matrix(modelToWorld, cameraToWorld);
       
       // set up the uniforms for the shader
@@ -486,17 +485,18 @@ namespace octet {
     }
 
     void setTerrainParameters(){
-      this->randomLow = -50.0f;
-      this->randomHigh = 50.0f;
+      this->randomLow = -100.0f;
+      this->randomHigh = 100.0f;
       this->debug = false;
+      this->renderMode = 0;
     }
 
 
     void simulate() {
-		keyboard();
-	}
+		  keyboard();
+	  }
 
-	void keyboard() {
+    void keyboard() {
       if(is_key_down('D')){
         cameraToWorld.translate(1.5,0,0);
       }
@@ -540,24 +540,28 @@ namespace octet {
         printf("Rows and Columns Smoothed\n");
         smootFilterRowsColumnsDisplacement();
         generateVerticesWireFrameModel();
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
       }
 
       if(is_key_down(key_f2)){
         printf("3x3 Box Smoothed\n");
         smooth3x3BoxFilter();
         generateVerticesWireFrameModel();
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
       }
 
       if(is_key_down(key_f3)){
         printf("PERTURBATION\n");
         perturbation(10.0,10.0);
         generateVerticesWireFrameModel();
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
       }
 
       if(is_key_down(key_f4)){
         printf("THERMAL EROSION\n");
         thermalErosion(4/(float)SEGMENTS);
         generateVerticesWireFrameModel();
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
       }
 
       //Regenerates terrain
@@ -573,7 +577,17 @@ namespace octet {
 
         generateVerticesWireFrameModel();
 
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+
         printf("Regenerated...\n");
+      }
+
+      if(is_key_down('T')){
+        this->renderMode = 0;
+      }
+
+      if(is_key_down('Y')){
+        this->renderMode = 1;
       }
     }
 
@@ -598,14 +612,21 @@ namespace octet {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	  
-		// draw the Landscape
-		for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
-			renderMap(wireFrameVertices[i]);
-		}
+	  if(renderMode == 1){
 
-		// draw the mesh
-		//terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
+		  // wireframe rendering
+		  for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
+			  wireFrameRendering(wireFrameVertices[i]);
+		  } 
+    }
+
+    if(renderMode == 0){
+		  // shader rendering
+		  terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld);
+
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
 
     }
 
