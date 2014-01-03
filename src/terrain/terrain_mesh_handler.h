@@ -2,16 +2,16 @@ namespace octet {
 
 	class terrain_mesh_handler {
 		mesh t_mesh;
-		int texture_1;
-		int texture_2; 
+		int textures_[4];
 
 	public:
 		terrain_mesh_handler() {}
 
 
-		void init(int texture_1_, int texture_2_) {
-			texture_1 = texture_1_; 
-			texture_2 = texture_2_; 
+		void init(GLuint textures[]) {
+			for (int i=0; i<4; i++) {
+				textures_[i] = textures[i];
+			}
 		}
 
 
@@ -116,12 +116,16 @@ namespace octet {
 			vec4 color_2(0, 0, 1, 1);
 
 			//new t_shader
-			t_shader.render_color(modelToProjection, modelToCamera, color_1, color_2); 
+			t_shader.render_color(modelToProjection, modelToCamera ); 
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texture_1);
+			glBindTexture(GL_TEXTURE_2D, textures_[0]);
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, texture_2);
+			glBindTexture(GL_TEXTURE_2D, textures_[1]);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, textures_[2]);
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, textures_[3]);
 
 
 			t_mesh.render(); 

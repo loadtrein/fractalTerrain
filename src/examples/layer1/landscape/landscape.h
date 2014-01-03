@@ -34,14 +34,14 @@ namespace octet {
 	  // terrain_shader terrain_shader_; 
 	  terrain_new_shader terrain_new_shader_;
 
-	  //phong_shader phong_shader_;
+
 
     PerlinNoiseGenerator perlinNoise;
 
     enum {   
       Terrain_Width = 100,
       Terrain_Length = 100,
-      SEGMENTS = 65,
+      SEGMENTS = 129,
     };
 
     float randomLow;
@@ -64,17 +64,19 @@ namespace octet {
     
     color_shader_.init();
 
-	  //terrain_shader_.init(); 
 	  
-	  //terrain_new_shader_.init();
+	  
+	  terrain_new_shader_.init();
 
-
+	  GLuint textures[4];
 	  // load textures 
-	  GLuint texture_grass	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
-	  GLuint texture_sand	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
+	  textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
+	  textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
+	  textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
+	  textures[3]   = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 
 	  //initialize terrain_mesh
-	  //terrain_mesh_handler_.init(texture_grass, texture_sand); 
+	  terrain_mesh_handler_.init(textures); 
 
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
@@ -95,7 +97,7 @@ namespace octet {
       generateVerticesWireFrameModel();
 	  
 	  
-	    //terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+	  terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
 
     }
 
@@ -540,24 +542,28 @@ namespace octet {
         printf("Rows and Columns Smoothed\n");
         smootFilterRowsColumnsDisplacement();
         generateVerticesWireFrameModel();
+		terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
       }
 
       if(is_key_down(key_f2)){
         printf("3x3 Box Smoothed\n");
         smooth3x3BoxFilter();
         generateVerticesWireFrameModel();
+		terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
       }
 
       if(is_key_down(key_f3)){
         printf("PERTURBATION\n");
         perturbation(10.0,10.0);
         generateVerticesWireFrameModel();
+		terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
       }
 
       if(is_key_down(key_f4)){
         printf("THERMAL EROSION\n");
         thermalErosion(4/(float)SEGMENTS);
         generateVerticesWireFrameModel();
+		terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
       }
 
       //Regenerates terrain
@@ -572,6 +578,8 @@ namespace octet {
         diamondSquareAlgorithm();
 
         generateVerticesWireFrameModel();
+
+		terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
 
         printf("Regenerated...\n");
       }
@@ -600,12 +608,14 @@ namespace octet {
 
 	  
 		// draw the Landscape
+		/*
 		for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
 			renderMap(wireFrameVertices[i]);
 		}
+		*/
 
 		// draw the mesh
-		//terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
+		terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld); 
 
     }
 
