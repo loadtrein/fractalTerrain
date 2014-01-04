@@ -34,14 +34,13 @@ namespace octet {
 	  // terrain_shader terrain_shader_; 
 	  terrain_new_shader terrain_new_shader_;
 
-
-
     PerlinNoiseGenerator perlinNoise;
+
 
     enum {   
       Terrain_Width = 200,
       Terrain_Length = 200,
-      SEGMENTS = 129,
+      SEGMENTS = 257,
     };
 
     float randomLow;
@@ -69,15 +68,15 @@ namespace octet {
 	    terrain_new_shader_.init();
 
 
-	  GLuint textures[4];
-	  // load textures 
-	  textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
-	  textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
-	  textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
-	  textures[3]   = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
+	    GLuint textures[4];
+	    // load textures 
+	    textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
+	    textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
+	    textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
+	    textures[3]   = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 
-	  //initialize terrain_mesh
-	  terrain_mesh_handler_.init(textures); 
+	    //initialize terrain_mesh
+	    terrain_mesh_handler_.init(textures); 
 
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
@@ -580,7 +579,8 @@ namespace octet {
 
         generateVerticesWireFrameModel();
 
-        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0])); 
+        terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]));
+
         printf("Regenerated...\n");
       }
 

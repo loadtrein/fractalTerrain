@@ -1,7 +1,7 @@
 namespace octet {
 
 	class terrain_mesh_handler {
-		mesh t_mesh;
+		dynarray<mesh*> terrainMeshes;
 		int textures_[4];
 
 	public:
@@ -15,19 +15,41 @@ namespace octet {
 		}
 
 
-		void create_mesh( Tile tiles[], int size) {
-			mesh_builder m_builder; 
-			m_builder.init(size*4,size*6); 
-			int counter = 0; 
+		void create_mesh(Tile tiles[], int size) {
+      
+      terrainMeshes.reset();
+
+      int numTerrainSegments = 0;
+
+      if(size > 128*128){
+        numTerrainSegments = size/(128*128);
+        size = 128*128;
+      }else{
+        numTerrainSegments = 1;
+      }      
+
+      int index=0;
+
+      for(int i=0; i!= numTerrainSegments; ++i){
+
+			    mesh_builder m_builder; 
+			    m_builder.init(size*4,size*6); 
+			    
+          
 			
-			for(int i=0; i<size; i++) {
-				Tile tile = tiles[i];
+			    for(int j=index; j!=index+size; j++) {
+				    Tile tile = tiles[j];
 
-				add_tile_facet_normal(tile, &m_builder);
-			}
+				    add_tile_facet_normal(tile, &m_builder);
+			    }
+          
+          mesh *t_mesh = new mesh();
+			    t_mesh->init();
+			    m_builder.get_mesh(*t_mesh);
+          this->terrainMeshes.push_back(t_mesh);
 
-			t_mesh.init();
-			m_builder.get_mesh(t_mesh); 
+          index+=size;
+      }
 		}
 
 
@@ -128,7 +150,9 @@ namespace octet {
 			glBindTexture(GL_TEXTURE_2D, textures_[3]);
 
 
-			t_mesh.render(); 
+      for(int i=0; i!=terrainMeshes.size();++i){
+        terrainMeshes[i]->render();
+      } 
 		}
 
 	};
