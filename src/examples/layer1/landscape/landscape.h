@@ -68,12 +68,14 @@ namespace octet {
 	    terrain_new_shader_.init();
 
 
-	    GLuint textures[4];
+	    GLuint textures[6];
 	    // load textures 
 	    textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif");
 	    textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif"); 
 	    textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
-	    textures[3]   = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
+	    textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
+		textures[4] = resources::get_texture_handle(GL_RGB, "#000000");
+		textures[5] = resources::get_texture_handle(GL_RGB, "#ffffff");
 
 	    //initialize terrain_mesh
 	    terrain_mesh_handler_.init(textures); 
@@ -486,6 +488,7 @@ namespace octet {
 
     }
 
+
     void setTerrainParameters(){
       this->randomLow = -100.0f;
       this->randomHigh = 100.0f;
@@ -496,7 +499,7 @@ namespace octet {
 
     void simulate() {
 		  keyboard();
-	  }
+	}
 
     void keyboard() {
       if(is_key_down('D')){
@@ -614,25 +617,20 @@ namespace octet {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	  if(renderMode == 1){
-
-		  // wireframe rendering
+		// wireframe rendering
+		if(renderMode == 1){
 		  for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
 			  wireFrameRendering(wireFrameVertices[i]);
 		  } 
+		}
+
+		// shader rendering
+		if(renderMode == 0){
+		  terrain_mesh_handler_.render(terrain_new_shader_, modelToWorld, cameraToWorld);
+
+		  glBindBuffer(GL_ARRAY_BUFFER, 0);
+	      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
     }
-
-    if(renderMode == 0){
-		  // shader rendering
-		  terrain_mesh_handler_.debugRender(terrain_new_shader_, modelToWorld, cameraToWorld);
-
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-
-    }
-
   };
-
 }  

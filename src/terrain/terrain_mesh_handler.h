@@ -2,54 +2,49 @@ namespace octet {
 
 	class terrain_mesh_handler {
 		dynarray<mesh*> terrainMeshes;
-		int textures_[4];
+		int textures_[6];
 
 	public:
 		terrain_mesh_handler() {}
 
 
 		void init(GLuint textures[]) {
-			for (int i=0; i<4; i++) {
+			for (int i=0; i<6; i++) {
 				textures_[i] = textures[i];
 			}
 		}
 
 
-		void create_mesh(Tile tiles[], int size) {
-      
-      terrainMeshes.reset();
+	    void create_mesh(Tile tiles[], int size) {
+		  terrainMeshes.reset();
 
-      int numTerrainSegments = 0;
+		  int numTerrainSegments = 0;
 
-      if(size > 128*128){
-        numTerrainSegments = size/(128*128);
-        size = 128*128;
-      }else{
-        numTerrainSegments = 1;
-      }      
+		  if(size > 128*128){
+			numTerrainSegments = size/(128*128);
+			size = 128*128;
+		  } else {
+			numTerrainSegments = 1;
+		  }      
 
-      int index=0;
+		  int index=0;
 
-      for(int i=0; i!= numTerrainSegments; ++i){
+		  for(int i=0; i!= numTerrainSegments; ++i){
+			  mesh_builder m_builder; 
+			  m_builder.init(size*4,size*6); 
 
-			    mesh_builder m_builder; 
-			    m_builder.init(size*4,size*6); 
-			    
+			  for(int j=index; j!=index+size; j++) {
+				  Tile tile = tiles[j];
+				  add_tile_facet_normal(tile, &m_builder);
+			  }
           
-			
-			    for(int j=index; j!=index+size; j++) {
-				    Tile tile = tiles[j];
+			  mesh *t_mesh = new mesh();
+			  t_mesh->init();
+			  m_builder.get_mesh(*t_mesh);
 
-				    add_tile_facet_normal(tile, &m_builder);
-			    }
-          
-          mesh *t_mesh = new mesh();
-			    t_mesh->init();
-			    m_builder.get_mesh(*t_mesh);
-          this->terrainMeshes.push_back(t_mesh);
-
-          index+=size;
-      }
+			  this->terrainMeshes.push_back(t_mesh);
+			  index+=size;
+		  }
 		}
 
 
@@ -122,7 +117,7 @@ namespace octet {
 		}
 
 		
-		void debugRender( /* terrain_shader */ terrain_new_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
+		void render( /* terrain_shader */ terrain_new_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -131,14 +126,18 @@ namespace octet {
 			mat4t worldToCamera;
 			mat4t modelToProjection = mat4t::build_camera_matrices(modelToCamera, worldToCamera, modelToWorld, cameraToWorld);
 
-			// t_shader.render(modelToProjection, 0, 1); 
+			float shininess = 30.0f;
+
+			vec4 light_dir = vec4(0, 1, 0, 0).normalize()*worldToCamera;
+			vec4 light_ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
+			vec4 light_diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			vec4 light_specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			
+			// vec4 color_1(1, 0, 1, 1);
+			// vec4 color_2(0, 0, 1, 1);
 
 			
-			vec4 color_1(1, 0, 1, 1);
-			vec4 color_2(0, 0, 1, 1);
-
-			//new t_shader
-			t_shader.render_color(modelToProjection, modelToCamera ); 
+			t_shader.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular); 
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, textures_[0]);
@@ -148,14 +147,16 @@ namespace octet {
 			glBindTexture(GL_TEXTURE_2D, textures_[2]);
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, textures_[3]);
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, textures_[4]); // emission
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, textures_[5]); // specular
+			glActiveTexture(GL_TEXTURE6);
 
-
-      for(int i=0; i!=terrainMeshes.size();++i){
-        terrainMeshes[i]->render();
-      } 
+			for(int i=0; i!=terrainMeshes.size();++i){
+				terrainMeshes[i]->render();
+			} 
 		}
 
 	};
-
-
 }
