@@ -35,7 +35,7 @@ namespace octet {
 
 			  for(int j=index; j!=index+size; j++) {
 				  Tile tile = tiles[j];
-				  add_tile_facet_normal(tile, &m_builder);
+				  add_tile_facet_normal(&tile, &m_builder);
 			  }
           
 			  mesh *t_mesh = new mesh();
@@ -51,17 +51,17 @@ namespace octet {
 		// this method calculates the normal of the face
 		// however the look is faceted
 		// it can be inproved by calculating for every point the average normal - 
-		void add_tile_facet_normal(Tile t, mesh_builder *m_builder){
+		void add_tile_facet_normal(Tile *t, mesh_builder *m_builder){
 			unsigned short cur_vertex = (unsigned short) m_builder->vertices.size(); 
 			
-			vec4 vector_1( t.points[0].getX(), t.points[0].getY(), t.points[0].getZ(), 1.0f);
-			vec4 vector_2( t.points[1].getX(), t.points[1].getY(), t.points[1].getZ(), 1.0f);
-			vec4 vector_3( t.points[2].getX(), t.points[2].getY(), t.points[2].getZ(), 1.0f);
-			vec4 vector_4( t.points[3].getX(), t.points[3].getY(), t.points[3].getZ(), 1.0f);
+			vec4 vector_1( t->points[0].getX(), t->points[0].getY(), t->points[0].getZ(), 1.0f);
+			vec4 vector_2( t->points[1].getX(), t->points[1].getY(), t->points[1].getZ(), 1.0f);
+			vec4 vector_3( t->points[2].getX(), t->points[2].getY(), t->points[2].getZ(), 1.0f);
+			vec4 vector_4( t->points[3].getX(), t->points[3].getY(), t->points[3].getZ(), 1.0f);
 			
 			// vectors to make the cross product and find the normal
-			vec4 n_v1(t.points[0].getX()-t.points[1].getX(), t.points[0].getY()-t.points[1].getY(), t.points[0].getZ()-t.points[1].getZ(), 1.0f);
-			vec4 n_v2(t.points[0].getX()-t.points[2].getX(), t.points[0].getY()-t.points[2].getY(), t.points[0].getZ()-t.points[2].getZ(), 1.0f);
+			vec4 n_v1(t->points[0].getX()-t->points[1].getX(), t->points[0].getY()-t->points[1].getY(), t->points[0].getZ()-t->points[1].getZ(), 1.0f);
+			vec4 n_v2(t->points[0].getX()-t->points[2].getX(), t->points[0].getY()-t->points[2].getY(), t->points[0].getZ()-t->points[2].getZ(), 1.0f);
 
 			vec4 nor_vec = n_v1 * n_v2;
 			vec4 nor_vec_normalized = nor_vec.normalize();
@@ -78,6 +78,11 @@ namespace octet {
 			m_builder->indices.push_back(cur_vertex+0);
 			m_builder->indices.push_back(cur_vertex+2);
 			m_builder->indices.push_back(cur_vertex+3);
+		}
+
+		// calculates the normal on every vertex that composes the face
+		void add_tile_vertex_normal(Tile tiles[], int pos, mesh_builder *m_builder) {
+
 		}
 
 
