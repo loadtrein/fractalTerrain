@@ -16,11 +16,6 @@ namespace octet {
 	GLuint light_specular_index;
 	GLuint shininess_index;
 
-
-	// index for flat shader emissive color
-	// GLuint emissive_color_1_index; 
-	// GLuint emissive_color_2_index; 
-
 	// index for multi textures
 	GLuint texture_samplers_index;
 
@@ -66,8 +61,6 @@ namespace octet {
 		varying vec3 norm_;
 		varying vec2 uv_;
 
-		// uniform vec4 emissive_color_1;
-		// uniform vec4 emissive_color_2;
 		uniform sampler2D samplers[6];
 
 		uniform vec3 light_direction;
@@ -76,12 +69,11 @@ namespace octet {
 		uniform vec4 light_specular;
 		uniform float shininess;
 
-
         void main() {
-			
 			vec4 pos_norm = normalize(pos_);
 			// vec4 color_pos = vec4(pos_norm.y, pos_norm.x, pos_norm.z, 1.0f );
 			// vec4 color_pos2 = vec4(pos_norm.y, 0.5f, 0.5f, 1.0f);
+			vec4 heigh_color = vec4(pos_norm.y, 0, 0, 1); 
 			vec3 nNorm = normalize(norm_);
 			vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
 			float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
@@ -100,7 +92,7 @@ namespace octet {
 			float blendAmount;
 
 			// select texture
-			
+			/*
 			if ( slope < 0.2) {
 				blendAmount = slope / 0.2f;
 				finalColor = mix(grass, rock, blendAmount);
@@ -114,20 +106,23 @@ namespace octet {
 			if ( slope >= 0.7f) {
 				finalColor = sand;
 			}
-			
-			/*
-			if (slope > 0.9 ) {
-				finalColor = grass;
-			} else {
-				finalColor = sand;
-			}
 			*/
+			
+			
+			if (slope > 0.8 ) {
+				finalColor = sand;
+			} else {
+				finalColor = grass;
+			}
+			
 
-			gl_FragColor =  // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+			gl_FragColor = finalColor*light_ambient + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+						/*
 						finalColor * light_ambient + 
 						finalColor * light_diffuse * diffuse_factor +
 						emission + 
 						specular * light_specular * specular_factor;
+						*/
         }
       );
 

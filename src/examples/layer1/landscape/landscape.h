@@ -521,28 +521,28 @@ namespace octet {
 			printf("Rows and Columns Smoothed\n");
 			smootFilterRowsColumnsDisplacement();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1); 
+			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f2)){
 			printf("3x3 Box Smoothed\n");
 			smooth3x3BoxFilter();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1); 
+			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f3)){
 			printf("PERTURBATION\n");
 			perturbation(10.0,10.0);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1); 
+			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f4)){
 			printf("THERMAL EROSION\n");
 			thermalErosion(4/(float)SEGMENTS);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
+			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
 		  }
 
 		  //Regenerates terrain
@@ -558,7 +558,7 @@ namespace octet {
 
 			generateVerticesWireFrameModel();
 
-			terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]),  SEGMENTS-1);
+			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
 
 			printf("Regenerated...\n");
 		  }

@@ -17,7 +17,7 @@ namespace octet {
 		}
 
 
-	    void create_mesh(Tile tiles[], int size, int length) {
+	    void create_mesh_old(Tile tiles[], int size, int length) {
 		  terrainMeshes.reset();
 
 		  int numTerrainSegments = 0;
@@ -485,7 +485,6 @@ namespace octet {
 			m_builder->add_vertex(vector_4, vector_4.normalize(), 0, 1);
 			
 			//printf("vector %f, %f, %f, %f - normalize %f, %f, %f, %f \n", vector_1.x(), vector_1.y(), vector_1.z(), vector_1.w(), vector_1.normalize().x(), vector_1.normalize().y(), vector_1.normalize().z(), vector_1.normalize().w());
-	
 
 			m_builder->indices.push_back(cur_vertex+0);
 			m_builder->indices.push_back(cur_vertex+1);
@@ -504,13 +503,12 @@ namespace octet {
 
 			if (size > 128) {
 				numTerrainSegments = size/128 *2;
-				printf(" numTerrainSegm %i \n", numTerrainSegments);
 				mesh_size = 128;
 			} else{
 				numTerrainSegments = 1;
 			}
 
-			int terrainSide_size = mesh_size*sqrt(numTerrainSegments);
+			int terrainSide_size = (int) mesh_size*sqrt(numTerrainSegments);
 
 			for (int index_i=0; index_i<terrainSide_size; index_i+=mesh_size) {
 				for (int index_j=0; index_j<terrainSide_size; index_j+=mesh_size) {
@@ -620,7 +618,7 @@ namespace octet {
 		}
 
 		
-		void render( /* terrain_shader */ terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
+		void render( terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld ) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -635,11 +633,7 @@ namespace octet {
 			vec4 light_ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
 			vec4 light_diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vec4 light_specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			
-			// vec4 color_1(1, 0, 1, 1);
-			// vec4 color_2(0, 0, 1, 1);
-
-			
+		
 			t_shader.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular); 
 
 			glActiveTexture(GL_TEXTURE0);
