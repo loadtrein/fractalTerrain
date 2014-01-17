@@ -16,7 +16,7 @@ namespace octet {
       this->justGenerated = false;
     }
 
-    Point(float x,float y,float z, bool b){
+    Point(float x_,float y_,float z_, bool b){
       this->x = x;
       this->y = y;
       this->z = z;

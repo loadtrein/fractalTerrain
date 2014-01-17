@@ -208,14 +208,11 @@
     <ClInclude Include="..\..\src\terrain\terrain_noise.h">
       <Filter>octet\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\shaders\terrain_shader.h">
-      <Filter>octet\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shaders\terrain_new_shader.h">
-      <Filter>octet\shaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\terrain\perlin_noise_generator.h">
       <Filter>octet\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shaders\terrain_shader.h">
+      <Filter>octet\shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
