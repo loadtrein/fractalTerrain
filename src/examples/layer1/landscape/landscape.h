@@ -44,7 +44,6 @@ namespace octet {
 		int renderMode;
 		bool debug;
 
-
 	  public:
 		Landscape(int argc, char **argv) : app(argc, argv) {}
 
@@ -361,8 +360,9 @@ namespace octet {
 						int row = i + distance/2;
 						int column = j + distance/2;
 
-						 if(heightMap[row][column].getY() == 0.0f){
+						int y_ = heightMap[row][column].getY();
 
+						 if(y_ == 0.0f){
 						   heightMap[row][column].setY(getDiamondGeneratedValue(row,column,distance/2,rLow,rHigh));
 						   heightMap[row][column].setJustGenerated(true);
 						 }
@@ -390,17 +390,20 @@ namespace octet {
 						int row1 = k;
 						int column1 = l + distance/2;
 
-						if(heightMap[row1][column1].getY() == 0.0f){
+						float y_1 = heightMap[row1][column1].getY();
 
+						if(y_1 == 0.0f){
 						  heightMap[row1][column1].setY(getSquareGeneratedValue(row1,column1,distance/2,rLow,rHigh));
 						  heightMap[row1][column1].setJustGenerated(true);
+
 						}
 
 						int row2 = k + distance/2;
 						int column2 = l;
 
-						if(heightMap[row2][column2].getY() == 0.0f){
+						float y_2 = heightMap[row2][column2].getY();
 
+						if(y_2 == 0.0f){
 						  heightMap[row2][column2].setY(getSquareGeneratedValue(row2,column2,distance/2,rLow,rHigh));
 						  heightMap[row2][column2].setJustGenerated(true);
 						}
@@ -420,16 +423,18 @@ namespace octet {
 			  rLow /= 2;
 			  rHigh /= 2;
 		  }
+
 		}
 
 
-		void setPointsAsExistingValues(){
+		void setPointsAsExistingValues() {
 		  for(int i=0; i!=SEGMENTS;++i){
 			for(int j=0; j!=SEGMENTS;++j){
 			  heightMap[i][j].setJustGenerated(false);
 			}
 		  }
 		}
+
 
 
 		void setInitialCorners() {
@@ -602,10 +607,13 @@ namespace octet {
 
 			// shader rendering
 			if(renderMode == 0){
-			  terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld);
+				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld);
 
-			  glBindBuffer(GL_ARRAY_BUFFER, 0);
+			  GLuint elementBuffer;
+			  glGenBuffers(1, &elementBuffer);
 			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			  
 			}
 		}
   };
