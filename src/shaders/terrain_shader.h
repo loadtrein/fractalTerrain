@@ -132,7 +132,6 @@ namespace octet {
 			vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
 			float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
 			float specular_factor = pow(max(dot(half_direction, nNorm), 0.0), shininess); 
-
 		
 			vec4 texturr = texture_selector();
 
