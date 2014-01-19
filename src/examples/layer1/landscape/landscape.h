@@ -610,9 +610,9 @@ namespace octet {
 				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld);
 
 			  GLuint elementBuffer;
-			  glGenBuffers(1, &elementBuffer);
+			 // glGenBuffers(1, &elementBuffer);
 			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			  glBindBuffer(GL_ARRAY_BUFFER, 0);
 			  
 			}
 		}
