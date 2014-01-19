@@ -17,9 +17,9 @@ namespace octet {
     }
 
     Point(float x_,float y_,float z_, bool b){
-      this->x = x;
-      this->y = y;
-      this->z = z;
+      this->x = x_;
+      this->y = y_;
+      this->z = z_;
       this->justGenerated = b;
     }
 
