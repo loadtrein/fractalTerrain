@@ -607,6 +607,7 @@ namespace octet {
 
 			// shader rendering
 			if(renderMode == 0){
+
 				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld);
 
 			  GLuint elementBuffer;

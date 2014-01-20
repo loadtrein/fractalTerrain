@@ -175,6 +175,8 @@ namespace octet {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
+			
+			glShadeModel(GL_SMOOTH);
 
 			mat4t modelToCamera;
 			mat4t worldToCamera;

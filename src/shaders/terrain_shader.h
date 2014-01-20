@@ -82,6 +82,16 @@ namespace octet {
 			return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 		}
 
+		vec3 blend(vec4 texture1, float alpha1, vec4 texture2, float alpha2) {
+			float depth = 0.2;
+			float ma = max(texture1.a + alpha1, texture2.a + alpha2) - depth;
+
+			float b1 = max(texture1.a + alpha1 - ma, 0);
+			float b2 = max(texture2.a + alpha2 - ma, 0);
+
+			return (texture1.rgb * b1 + texture2.rgb *b2) / (b1+b2);
+		}
+
 
 		vec4 texture_selector() {
 			vec3 nNorm = normalize(norm_);
@@ -105,20 +115,13 @@ namespace octet {
 			vec2 v = vec2(1.0, 0);
 			float noise_selector = rand(v);
 
-			if (height > 0.8) {
-				if (slope > 0.8 ) {
-					finalColor = rock;
-				} else {
-					finalColor = snow;
-				}
+			vec4 grass_sand_texture = mix(grass,sand, slope);
+			vec4 snow_sand_texture = mix(snow, sand, slope);
+			if (height >0.8) {
+				finalColor = mix (snow_sand_texture, snow, height);
 			} else {
-				if (slope > 0.9 ) {
-					finalColor = sand;
-				} else {
-					finalColor = grass;
-				}
+				finalColor = grass_sand_texture;
 			}
-
 			return  finalColor;
 		}
 		
@@ -127,7 +130,7 @@ namespace octet {
 			vec4 pos_norm = normalize(pos_);
 			vec3 nNorm = normalize(norm_);
 			float height = (pos_.y + delta_h/2) / (delta_h+delta_h/5);
-			vec4 heigh_color = vec4(height, height, height, 1); 
+			vec4 heigh_color = vec4(height, height, height, 1);
 			
 			vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
 			float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
@@ -135,7 +138,7 @@ namespace octet {
 		
 			vec4 texturr = texture_selector();
 
-			gl_FragColor =  texturr + heigh_color; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+			gl_FragColor =  texturr * light_ambient; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
 						/*
 						finalColor * light_ambient + 
 						finalColor * light_diffuse * diffuse_factor +
