@@ -21,8 +21,8 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Terrain_Width = 200,
-		  Terrain_Length = 200,
+		  Terrain_Width = 400,
+		  Terrain_Length = 400,
 		  SEGMENTS = 257,
 		};
 

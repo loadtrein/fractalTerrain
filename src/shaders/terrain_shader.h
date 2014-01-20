@@ -54,7 +54,7 @@ namespace octet {
 
 
           gl_Position = modelToProjection * pos;
-		  gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
+		  // gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
         }
       );
 
@@ -115,12 +115,12 @@ namespace octet {
 			vec2 v = vec2(1.0, 0);
 			float noise_selector = rand(v);
 
-			vec4 grass_sand_texture = mix(grass,sand, slope);
+			vec4 grass_sand_texture = mix(grass, sand, slope);
 			vec4 snow_sand_texture = mix(snow, sand, slope);
 			if (height >0.8) {
-				finalColor = mix (snow_sand_texture, snow, height);
+				finalColor = mix(snow_sand_texture, snow, height);
 			} else {
-				finalColor = grass_sand_texture;
+				finalColor = mix(grass_sand_texture, grass, slope/2);
 			}
 			return  finalColor;
 		}
@@ -138,7 +138,7 @@ namespace octet {
 		
 			vec4 texturr = texture_selector();
 
-			gl_FragColor =  texturr * light_ambient; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+			gl_FragColor =  texturr;// + heigh_color; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
 						/*
 						finalColor * light_ambient + 
 						finalColor * light_diffuse * diffuse_factor +
