@@ -81,8 +81,8 @@ namespace octet {
 			vec4 pNorm = normalize(pos_);
 
 			// load textures 
-			vec4 grass1	= texture2D(samplers[0], uv_);
-			vec4 grass2	= texture2D(samplers[1], uv_);
+			vec4 sand	= texture2D(samplers[0], uv_);
+			vec4 grass	= texture2D(samplers[1], uv_);
 			vec4 rock	= texture2D(samplers[2], uv_);
 			vec4 snow	= texture2D(samplers[3], uv_);
 
@@ -92,7 +92,24 @@ namespace octet {
 			float height = (pos_.y + delta_h/2) / delta_h;
 			vec4 finalColor;
 
-			if (height > 0.8) {
+
+      if(height> 0.8){
+        finalColor = snow;
+      }else if(height >= 0.7 && height <= 0.8){
+        finalColor = mix(snow,rock,(0.8-height)*10.0);
+      }else if(height > 0.6){
+        finalColor = rock;
+      }else if(height >= 0.5 && height <= 0.6){
+        finalColor = mix(rock,grass,(0.6-height)*10.0);
+      }else if(height > 0.4){
+        finalColor = grass;
+      }else if(height >= 0.35 && height <= 0.4){
+        finalColor = mix(grass,sand,(0.4-height)*20.0);
+      }else{
+        finalColor = sand;
+      }
+
+		/*	if (height > 0.8) {
 				finalColor = snow;
 			} else if(height > 0.7 && height < 0.8) {
 				float gap =  (height - 0.2) * (1.0 / (0.7 - 0.2));
@@ -103,30 +120,29 @@ namespace octet {
 				finalColor = grass2;
 			} else {
 				finalColor = rock;
-			}
+			} */
 			
 			return  finalColor;
 		}
 		
 
-        void main() {
-			vec4 pos_norm = normalize(pos_);
-			vec3 nNorm = normalize(norm_);
-			float height = (pos_.y + delta_h/2) / (delta_h+delta_h/5);
-			vec4 heigh_color = vec4(height, height, height, 1);
+      void main() {
+			  vec4 pos_norm = normalize(pos_);
+			  vec3 nNorm = normalize(norm_);
+			  float height = (pos_.y + delta_h/2) / (delta_h+delta_h/5);
+			  vec4 heigh_color = vec4(height, height, height, 1);
 			
-			vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
-			float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
-			float specular_factor = pow(max(dot(half_direction, nNorm), 0.0), shininess); 
-		
-			vec4 texturr = texture_selector();
+			  vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
+			  float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
+			  float specular_factor = pow(max(dot(half_direction, nNorm), 0.0), shininess); 
+	
 
-			gl_FragColor =  // texturr;// + heigh_color; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+			  gl_FragColor =   texture_selector();// + heigh_color; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
 						
-						texturr * light_ambient + 
-						texturr * light_diffuse * diffuse_factor;// +
-						//emission + 
-						//specular * light_specular * specular_factor;
+						  //texturr * light_ambient + 
+						  //texturr * light_diffuse * diffuse_factor;// +
+						  //emission + 
+						  //specular * light_specular * specular_factor;
 						
         }
       );
@@ -146,18 +162,18 @@ namespace octet {
 
       // extract the indices of the uniforms to use later
       modelToProjection_index = glGetUniformLocation(program(), "modelToProjection");
-	  modelToCamera_index = glGetUniformLocation(program(), "modelToCamera");
+	    modelToCamera_index = glGetUniformLocation(program(), "modelToCamera");
 
-	  light_direction_index = glGetUniformLocation(program(), "light_direction");
-	  shininess_index = glGetUniformLocation(program(), "shininess");
-	  light_ambient_index = glGetUniformLocation(program(), "light_ambient");
-	  light_diffuse_index = glGetUniformLocation(program(), "light_diffuse");
-	  light_specular_index = glGetUniformLocation(program(), "light_specular");
-	  // emissive_color_1_index = glGetUniformLocation(program(), "emissive_color_1");
-	  // emissive_color_2_index = glGetUniformLocation(program(), "emissive_color_2");
-	  texture_samplers_index = glGetUniformLocation(program(), "samplers");
+	    light_direction_index = glGetUniformLocation(program(), "light_direction");
+	    shininess_index = glGetUniformLocation(program(), "shininess");
+	    light_ambient_index = glGetUniformLocation(program(), "light_ambient");
+	    light_diffuse_index = glGetUniformLocation(program(), "light_diffuse");
+	    light_specular_index = glGetUniformLocation(program(), "light_specular");
+	    // emissive_color_1_index = glGetUniformLocation(program(), "emissive_color_1");
+	    // emissive_color_2_index = glGetUniformLocation(program(), "emissive_color_2");
+	    texture_samplers_index = glGetUniformLocation(program(), "samplers");
 
-	  delta_height_index = glGetUniformLocation(program(), "delta_h");
+	    delta_height_index = glGetUniformLocation(program(), "delta_h");
 
 	  
     }
@@ -166,23 +182,23 @@ namespace octet {
       // tell openGL to use the program
       shader::render();
 
-      // set the uniforms
-	  // glUniform4fv(emissive_color_1_index, 1, emissive_color_1.get());
-	  // glUniform4fv(emissive_color_2_index, 1, emissive_color_2.get());
-	  glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get()); 
-	  glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get());
+        // set the uniforms
+	    // glUniform4fv(emissive_color_1_index, 1, emissive_color_1.get());
+	    // glUniform4fv(emissive_color_2_index, 1, emissive_color_2.get());
+	    glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get()); 
+	    glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get());
 
-	  glUniform3fv(light_direction_index, 1, light_direction.get());
-	  glUniform4fv(light_ambient_index, 1, light_ambient.get());
-	  glUniform4fv(light_specular_index, 1, light_specular.get());
-	  glUniform4fv(light_diffuse_index, 1, light_diffuse.get());
-	  glUniform1f(shininess_index, shininess);
+	    glUniform3fv(light_direction_index, 1, light_direction.get());
+	    glUniform4fv(light_ambient_index, 1, light_ambient.get());
+	    glUniform4fv(light_specular_index, 1, light_specular.get());
+	    glUniform4fv(light_diffuse_index, 1, light_diffuse.get());
+	    glUniform1f(shininess_index, shininess);
 
-	  glUniform1f(delta_height_index, delta_height); 
+	    glUniform1f(delta_height_index, delta_height); 
 
 
-	  static const GLint samplers[] = { 0, 1, 2, 3, 4, 6};
-	  glUniform1iv(texture_samplers_index, num_samplers, samplers);
+	    static const GLint samplers[] = { 0, 1, 2, 3, 4, 6};
+	    glUniform1iv(texture_samplers_index, num_samplers, samplers);
     }
   };
 }
