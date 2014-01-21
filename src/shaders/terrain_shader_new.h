@@ -51,8 +51,10 @@ namespace octet {
 
 		  // normal is calculated using the modelToCamera
 		  norm_ = (modelToCamera * vec4(normal,0)).xyz;
-      gl_Position = modelToProjection * pos;
-		  //gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
+
+
+          gl_Position = modelToProjection * pos;
+		  // gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
         }
       );
 
@@ -75,6 +77,21 @@ namespace octet {
 
 		uniform float delta_h;
 
+		
+		float rand(vec2 co){
+			return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+		}
+
+		vec3 blend(vec4 texture1, float alpha1, vec4 texture2, float alpha2) {
+			float depth = 0.2;
+			float ma = max(texture1.a + alpha1, texture2.a + alpha2) - depth;
+
+			float b1 = max(texture1.a + alpha1 - ma, 0);
+			float b2 = max(texture2.a + alpha2 - ma, 0);
+
+			return (texture1.rgb * b1 + texture2.rgb *b2) / (b1+b2);
+		}
+
 
 		vec4 texture_selector() {
 			vec3 nNorm = normalize(norm_);
@@ -89,8 +106,27 @@ namespace octet {
 			vec4 emission = texture2D(samplers[4], uv_);
 			vec4 specular = texture2D(samplers[5], uv_);
 
+			//calculate slope
+			float slope = 1-nNorm.y;
 			float height = (pos_.y + delta_h/2) / delta_h;
 			vec4 finalColor;
+
+			// select texture based on heights and normal
+			vec2 v = vec2(1.0, 0);
+			float noise_selector = rand(v);
+
+			/*
+			vec4 grass_grass_texture = mix(grass1, grass2, slope);
+			vec4 snow_grass_texture = mix(snow, grass2, slope);
+			if (height >0.8) {
+				finalColor = mix(snow_grass_texture, snow, height);
+			} else {
+				finalColor = mix(grass_grass_texture, grass1, slope/2);
+			}
+			if (nNorm.y > 0.9) {
+				finalColor = mix(grass_grass_texture, rock, slope/2);
+			}
+			*/
 
 			if (height > 0.8) {
 				finalColor = snow;
