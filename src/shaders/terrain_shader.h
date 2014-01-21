@@ -54,7 +54,7 @@ namespace octet {
 
 
           gl_Position = modelToProjection * pos;
-		  gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
+		  //gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
         }
       );
 
