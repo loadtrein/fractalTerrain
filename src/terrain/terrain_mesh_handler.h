@@ -26,7 +26,7 @@ namespace octet {
 			int mesh_size = 0;
 
 			if (size > 128) {
-				numTerrainSegments = size/128 *2;
+				numTerrainSegments = size/128 *2; // 2^i
 				mesh_size = 128;
 			} else{
 				numTerrainSegments = 1;
@@ -39,7 +39,6 @@ namespace octet {
 
 					mesh_builder m_builder;
 					m_builder.init(mesh_size*4, mesh_size*6);
-
 						
 					for (int i=index_i; i<index_i+mesh_size; i++) {
 						for (int j=index_j; j<index_j+mesh_size; j++) {
@@ -50,6 +49,7 @@ namespace octet {
 					mesh *t_mesh = new mesh();
 					t_mesh->init();
 					m_builder.get_mesh(*t_mesh);
+					t_mesh->set_mode(GL_LINES);
 
 					this->terrainMeshes.push_back(t_mesh);
 				}
@@ -69,8 +69,6 @@ namespace octet {
 			vec4 v0, v1, v2, v3;
 			vec4 n0, n1, n2, n3;
 
-			
-
 			// get points
 			v0 = vec4(	    heightMap[i*size + j].getX(),       heightMap[i*size + j].getY(),       heightMap[i*size + j].getZ(), 1);
 			v1 = vec4(    heightMap[i*size + j+1].getX(),     heightMap[i*size + j+1].getY(),     heightMap[i*size + j+1].getZ(), 1);
@@ -84,10 +82,19 @@ namespace octet {
 			n3 = get_norm( size, i+1,   j, heightMap);
 			
 			// add vertices with normals
+			/*
 			m_builder->add_vertex(v0, n0, 0, 0);
 			m_builder->add_vertex(v1, n1, 0, 1);
 			m_builder->add_vertex(v2, n2, 1, 1);
 			m_builder->add_vertex(v3, n3, 0, 1);
+			*/
+
+			m_builder->add_vertex(v0, n0, ((float)i/size), ((float)j/size));
+			m_builder->add_vertex(v1, n1, ((float)i/size), ((float)(j+1)/size));
+			m_builder->add_vertex(v2, n2, ((float)(i+1)/size), ((float)(j+1)/size));
+			m_builder->add_vertex(v3, n3, ((float)(i+1)/size), ((float)j/size)); 
+
+			
 			
 			m_builder->indices.push_back(cur_vertex+0);
 			m_builder->indices.push_back(cur_vertex+1);
@@ -145,6 +152,8 @@ namespace octet {
 
 			return vSum.normalize();
 		}
+
+		
 
 
 		float get_highestValue(int size,  Point * const heightMap) {

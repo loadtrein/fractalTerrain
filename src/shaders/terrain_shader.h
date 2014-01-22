@@ -81,10 +81,10 @@ namespace octet {
 			vec4 pNorm = normalize(pos_);
 
 			// load textures 
-			vec4 sand	= texture2D(samplers[0], uv_);
-			vec4 grass	= texture2D(samplers[1], uv_);
-			vec4 rock	= texture2D(samplers[2], uv_);
-			vec4 snow	= texture2D(samplers[3], uv_);
+			vec4 sand	= texture2D(samplers[0], uv_*8);
+			vec4 grass	= texture2D(samplers[1], uv_*8);
+			vec4 rock	= texture2D(samplers[2], uv_*8);
+			vec4 snow	= texture2D(samplers[3], uv_*8);
 
 			vec4 emission = texture2D(samplers[4], uv_);
 			vec4 specular = texture2D(samplers[5], uv_);
@@ -108,6 +108,8 @@ namespace octet {
       }else{
         finalColor = sand;
       }
+
+	  
 
 		/*	if (height > 0.8) {
 				finalColor = snow;
