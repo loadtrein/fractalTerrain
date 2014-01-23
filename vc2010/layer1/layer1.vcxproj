@@ -62,6 +62,7 @@
     <ClInclude Include="..\..\src\shaders\bump_shader.h" />
     <ClInclude Include="..\..\src\shaders\color_shader.h" />
     <ClInclude Include="..\..\src\shaders\phong_shader.h" />
+    <ClInclude Include="..\..\src\shaders\sea_shader.h" />
     <ClInclude Include="..\..\src\shaders\shader.h" />
     <ClInclude Include="..\..\src\shaders\terrain_shader.h" />
     <ClInclude Include="..\..\src\shaders\terrain_shader_new.h" />

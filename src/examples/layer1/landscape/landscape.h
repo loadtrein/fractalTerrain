@@ -21,13 +21,14 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Terrain_Width = 200,
-		  Terrain_Length = 200,
+		  Terrain_Width = 300,
+		  Terrain_Length = 300,
 		  SEGMENTS = 257,
 		};
 
 		color_shader color_shader_;
 		terrain_shader terrain_shader_;
+    sea_shader sea_shader_;
 
 		PerlinNoiseGenerator perlinNoise;
 		terrain_mesh_handler terrain_mesh_handler_;
@@ -57,15 +58,17 @@ namespace octet {
 		void app_init() {
 		    color_shader_.init();
 			terrain_shader_.init();
+      sea_shader_.init();
 
-			GLuint textures[6];
+			GLuint textures[7];
 			// load textures 
 			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
 			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
-			textures[4] = resources::get_texture_handle(GL_RGB, "#000000");
-			textures[5] = resources::get_texture_handle(GL_RGB, "#ffffff");
+      textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
+			textures[5] = resources::get_texture_handle(GL_RGB, "#000000");
+			textures[6] = resources::get_texture_handle(GL_RGB, "#ffffff");
 
 			//initialize terrain_mesh
 			terrain_mesh_handler_.init(textures);
@@ -663,7 +666,7 @@ namespace octet {
 			// shader rendering
 			if(renderMode == 0){
 
-				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld, render_mode, deltaHeight);
+				terrain_mesh_handler_.render(terrain_shader_, sea_shader_, modelToWorld, cameraToWorld, render_mode, deltaHeight);
 
 			  GLuint elementBuffer;
 			 // glGenBuffers(1, &elementBuffer);

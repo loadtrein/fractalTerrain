@@ -3,7 +3,7 @@ namespace octet {
 	class terrain_mesh_handler {
 		dynarray<mesh*> terrainMeshes;
     dynarray<mesh*> seaMeshes;
-		int textures_[6];
+		int textures_[7];
 
 
 	public:
@@ -12,7 +12,7 @@ namespace octet {
 
 		void init(GLuint textures[]) {
 			
-			for (int i=0; i<6; i++) {
+			for (int i=0; i<7; i++) {
 				textures_[i] = textures[i];
 			}
 		}
@@ -161,7 +161,7 @@ namespace octet {
 		}
 
 		
-		void render(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode, float delta_height) {
+		void render(terrain_shader &t_shader, sea_shader &s_shader,mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode, float delta_height) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -183,17 +183,24 @@ namespace octet {
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, textures_[0]);
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, textures_[1]);
+
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, textures_[2]);
+
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, textures_[3]);
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, textures_[4]); // emission
+
+      glActiveTexture(GL_TEXTURE4);
+      glBindTexture(GL_TEXTURE_2D, textures_[4]);
+
 			glActiveTexture(GL_TEXTURE5);
-			glBindTexture(GL_TEXTURE_2D, textures_[5]); // specular
+			glBindTexture(GL_TEXTURE_2D, textures_[5]); // emission
+
 			glActiveTexture(GL_TEXTURE6);
+			glBindTexture(GL_TEXTURE_2D, textures_[6]); // specular
 
 
 			for(int i=0; i!=terrainMeshes.size();++i){
@@ -205,6 +212,8 @@ namespace octet {
 
 				terrainMeshes[i]->render();
 			} 
+
+      s_shader.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular); 
 
       for(int i=0; i!=seaMeshes.size();++i){
         if (render_mode < 2) { 
