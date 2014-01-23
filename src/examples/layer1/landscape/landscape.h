@@ -44,6 +44,7 @@ namespace octet {
 		float randomLow;
 		float randomHigh;
 		int renderMode;
+		int render_mode; 
 		bool debug;
 
 	  public:
@@ -57,7 +58,7 @@ namespace octet {
 			GLuint textures[6];
 			// load textures 
 			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
-			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
+			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass_big2.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 			textures[4] = resources::get_texture_handle(GL_RGB, "#000000");
@@ -481,6 +482,7 @@ namespace octet {
 		  this->randomHigh = 100.0f;
 		  this->debug = false;
 		  this->renderMode = 0;
+		  this->render_mode = 0; 
 		}
 
 
@@ -582,6 +584,13 @@ namespace octet {
 		  if(is_key_down('Y')){
 			this->renderMode = 1;
 		  }
+
+		  if(is_key_down('M')) {
+			  if(render_mode>2)
+				  render_mode =0;
+			  else render_mode++; 
+		  }
+
 		}
 
 			// this is called to draw the world
@@ -615,7 +624,7 @@ namespace octet {
 			// shader rendering
 			if(renderMode == 0){
 
-				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld);
+				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld, render_mode);
 
 			  GLuint elementBuffer;
 			 // glGenBuffers(1, &elementBuffer);
