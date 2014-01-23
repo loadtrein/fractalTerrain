@@ -606,8 +606,11 @@ namespace octet {
 
 			diamondSquareAlgorithm();
 
-			generateVerticesWireFrameModel();
+      calculateDeltaHeight();
 
+			generateVerticesWireFrameModel();
+      
+      terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap, 1);
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 
 			printf("Regenerated...\n");
