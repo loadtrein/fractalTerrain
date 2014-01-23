@@ -26,12 +26,16 @@ namespace octet {
 			int mesh_size = 0;
 
 			if (size > 128) {
-				numTerrainSegments = size/128 *2; // 2^i
+				int base = (int)size/128;
+				int exponential = (int) std::powf(base, 2);
+				numTerrainSegments = exponential;//size/128 * exponential;
 				mesh_size = 128;
 			} else{
 				numTerrainSegments = 1;
+				mesh_size = size-1;
 			}
 
+		
 			int terrainSide_size = (int)( mesh_size*sqrt(numTerrainSegments));
 
 			for (int index_i=0; index_i<terrainSide_size; index_i+=mesh_size) {
@@ -49,7 +53,7 @@ namespace octet {
 					mesh *t_mesh = new mesh();
 					t_mesh->init();
 					m_builder.get_mesh(*t_mesh);
-					t_mesh->set_mode(GL_LINES);
+					
 
 					this->terrainMeshes.push_back(t_mesh);
 				}
@@ -180,7 +184,7 @@ namespace octet {
 		}
 
 		
-		void render( terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld) {
+		void render(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -214,7 +218,16 @@ namespace octet {
 			glBindTexture(GL_TEXTURE_2D, textures_[5]); // specular
 			glActiveTexture(GL_TEXTURE6);
 
+
+			
+
 			for(int i=0; i!=terrainMeshes.size();++i){
+				if (render_mode < 2) { 
+						terrainMeshes[i]->set_mode(GL_TRIANGLES);
+				} else {
+						terrainMeshes[i]->set_mode(GL_LINES);
+				} 
+
 				terrainMeshes[i]->render();
 			} 
 		}
