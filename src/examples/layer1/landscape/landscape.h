@@ -34,6 +34,8 @@ namespace octet {
 
 		Point heightMap [SEGMENTS] [SEGMENTS];
 
+    Point seaMap [SEGMENTS] [SEGMENTS];
+
 		Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
 
 		mat4t cameraToWorld;
@@ -72,7 +74,7 @@ namespace octet {
 
 		    setTerrainParameters();
       
-		    setHeightMapInitialValues();
+		    setMapsInitialValues();
 
 		    setInitialCorners();
 
@@ -84,7 +86,8 @@ namespace octet {
 	  
 			// terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
 			
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+      terrain_mesh_handler_
 
 		
 
@@ -454,7 +457,7 @@ namespace octet {
 
 		//-----------------------------------HEIGHT MAP INITIAL VALUES-----------------------------------------------
 
-		void setHeightMapInitialValues() {
+		void setMapsInitialValues() {
 		  float widhtIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
 		  float lenghtIncrement = ((float)Terrain_Length)/((float)SEGMENTS-1.0f);
 
@@ -463,6 +466,10 @@ namespace octet {
 			  heightMap[i][j].setX((float)(widhtIncrement*((float)i)));
 			  heightMap[i][j].setY(0.0);
 			  heightMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
+
+        seaMap[i][j].setX((float)(widhtIncrement*((float)i)));
+        seaMap[i][j].setY(0.0);
+        seaMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
 			}
 		  }
 
@@ -526,28 +533,28 @@ namespace octet {
 			printf("Rows and Columns Smoothed\n");
 			smootFilterRowsColumnsDisplacement();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f2)){
 			printf("3x3 Box Smoothed\n");
 			smooth3x3BoxFilter();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f3)){
 			printf("PERTURBATION\n");
 			perturbation(10.0,10.0);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
 		  }
 
 		  if(is_key_down(key_f4)){
 			printf("THERMAL EROSION\n");
 			thermalErosion(4/(float)SEGMENTS);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
 		  }
 
 		  //Regenerates terrain
@@ -555,7 +562,7 @@ namespace octet {
 
 			printf("Regenerating terrain...\n");
 
-			setHeightMapInitialValues();
+			setMapsInitialValues();
 
 			setInitialCorners();
 
@@ -563,7 +570,7 @@ namespace octet {
 
 			generateVerticesWireFrameModel();
 
-			terrain_mesh_handler_.create_mesh_from_heightMap(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
 
 			printf("Regenerated...\n");
 		  }

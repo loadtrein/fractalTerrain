@@ -2,6 +2,7 @@ namespace octet {
 
 	class terrain_mesh_handler {
 		dynarray<mesh*> terrainMeshes;
+    dynarray<mesh*> seaMeshes;
 		float delta_height;
 		int textures_[6];
 
@@ -19,8 +20,9 @@ namespace octet {
 
 
 
-		void create_mesh_from_heightMap(int size,  Point * const heightMap) {
+		void create_mesh_from_map(int size,  Point * const heightMap) {
 			terrainMeshes.reset();
+      seaMeshes.reset();
 
 			int numTerrainSegments = 0;
 			int mesh_size = 0;
@@ -49,7 +51,7 @@ namespace octet {
 					mesh *t_mesh = new mesh();
 					t_mesh->init();
 					m_builder.get_mesh(*t_mesh);
-					t_mesh->set_mode(GL_LINES);
+					t_mesh->set_mode(GL_TRIANGLES);
 
 					this->terrainMeshes.push_back(t_mesh);
 				}
