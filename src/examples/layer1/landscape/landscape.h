@@ -88,7 +88,7 @@ namespace octet {
 			// terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
 			
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
-      terrain_mesh_handler_
+      terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap);
 
 		
 
