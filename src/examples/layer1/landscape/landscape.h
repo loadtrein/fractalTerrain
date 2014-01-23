@@ -58,7 +58,7 @@ namespace octet {
 			GLuint textures[6];
 			// load textures 
 			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
-			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass_big2.gif"); 
+			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 			textures[4] = resources::get_texture_handle(GL_RGB, "#000000");
@@ -87,8 +87,8 @@ namespace octet {
 	  
 			// terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
 			
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
-      terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+      //terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap, 1);
 
 		
 
@@ -535,28 +535,28 @@ namespace octet {
 			printf("Rows and Columns Smoothed\n");
 			smootFilterRowsColumnsDisplacement();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f2)){
 			printf("3x3 Box Smoothed\n");
 			smooth3x3BoxFilter();
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f3)){
 			printf("PERTURBATION\n");
 			perturbation(10.0,10.0);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f4)){
 			printf("THERMAL EROSION\n");
 			thermalErosion(4/(float)SEGMENTS);
 			generateVerticesWireFrameModel();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  //Regenerates terrain
@@ -572,7 +572,7 @@ namespace octet {
 
 			generateVerticesWireFrameModel();
 
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 
 			printf("Regenerated...\n");
 		  }

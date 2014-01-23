@@ -20,25 +20,29 @@ namespace octet {
 
 
 
-		void create_mesh_from_map(int size,  Point * const heightMap) {
-			terrainMeshes.reset();
-      seaMeshes.reset();
+		void create_mesh_from_map(int size,  Point * const heightMap, int meshType) {
+			
+      if(meshType == 0){
+        terrainMeshes.reset();
+      }else if(meshType == 1){
+        seaMeshes.reset();
+      }
 
-			int numTerrainSegments = 0;
+			int numMeshSegments = 0;
 			int mesh_size = 0;
 
 			if (size > 128) {
 				int base = (int)size/128;
 				int exponential = (int) std::powf(base, 2);
-				numTerrainSegments = exponential;//size/128 * exponential;
+				numMeshSegments = exponential;//size/128 * exponential;
 				mesh_size = 128;
 			} else{
-				numTerrainSegments = 1;
+				numMeshSegments = 1;
 				mesh_size = size-1;
 			}
 
 		
-			int terrainSide_size = (int)( mesh_size*sqrt(numTerrainSegments));
+			int terrainSide_size = (int)( mesh_size*sqrt(numMeshSegments));
 
 			for (int index_i=0; index_i<terrainSide_size; index_i+=mesh_size) {
 				for (int index_j=0; index_j<terrainSide_size; index_j+=mesh_size) {
@@ -55,7 +59,12 @@ namespace octet {
 					mesh *t_mesh = new mesh();
 					t_mesh->init();
 					m_builder.get_mesh(*t_mesh);
-					this->terrainMeshes.push_back(t_mesh);
+
+          if(meshType == 0){
+            this->terrainMeshes.push_back(t_mesh);
+          }else if(meshType == 1){
+            this->seaMeshes.push_back(t_mesh);
+          }			
 				}
 			}
 
@@ -167,7 +176,7 @@ namespace octet {
 				if (n>h)
 					h = n;
 			}
-			printf("h %f \n", h);
+			//printf("h %f \n", h);
 			return h;
 		}
 
@@ -179,7 +188,7 @@ namespace octet {
 				if (n<l)
 					l=n;
 			}
-			printf("l %f \n", l);
+			//printf("l %f \n", l);
 			return l;
 		}
 
