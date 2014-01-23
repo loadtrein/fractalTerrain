@@ -56,7 +56,7 @@ namespace octet {
 			GLuint textures[6];
 			// load textures 
 			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
-			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
+			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass_big2.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 			textures[4] = resources::get_texture_handle(GL_RGB, "#000000");

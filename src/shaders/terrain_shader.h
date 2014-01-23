@@ -81,10 +81,10 @@ namespace octet {
 			vec4 pNorm = normalize(pos_);
 
 			// load textures 
-			vec4 sand	= texture2D(samplers[0], uv_*8);
-			vec4 grass	= texture2D(samplers[1], uv_*8);
-			vec4 rock	= texture2D(samplers[2], uv_*8);
-			vec4 snow	= texture2D(samplers[3], uv_*8);
+			vec4 sand	= texture2D(samplers[0], uv_);
+			vec4 grass	= texture2D(samplers[1], uv_);
+			vec4 rock	= texture2D(samplers[2], uv_);
+			vec4 snow	= texture2D(samplers[3], uv_);
 
 			vec4 emission = texture2D(samplers[4], uv_);
 			vec4 specular = texture2D(samplers[5], uv_);
@@ -92,22 +92,27 @@ namespace octet {
 			float height = (pos_.y + delta_h/2) / delta_h;
 			vec4 finalColor;
 
+			if (nNorm.y == 1) {
+				finalColor = rock; 
+			} else {
+				if(height> 0.8){
+					finalColor = snow;
+				} else if(height >= 0.7 && height <= 0.8){
+					finalColor = mix(snow,rock,(0.8-height)*10.0);
+				} else if(height > 0.6){
+					finalColor = rock;
+				} else if(height >= 0.5 && height <= 0.6){
+					finalColor = mix(rock,grass,(0.6-height)*10.0);
+				} else if(height > 0.4){
+					finalColor = grass;
+				} else if(height >= 0.35 && height <= 0.4){
+					finalColor = mix(grass,sand,(0.4-height)*20.0);
+				} else{
+					finalColor = sand;
+				}
+			}
 
-      if(height> 0.8){
-        finalColor = snow;
-      }else if(height >= 0.7 && height <= 0.8){
-        finalColor = mix(snow,rock,(0.8-height)*10.0);
-      }else if(height > 0.6){
-        finalColor = rock;
-      }else if(height >= 0.5 && height <= 0.6){
-        finalColor = mix(rock,grass,(0.6-height)*10.0);
-      }else if(height > 0.4){
-        finalColor = grass;
-      }else if(height >= 0.35 && height <= 0.4){
-        finalColor = mix(grass,sand,(0.4-height)*20.0);
-      }else{
-        finalColor = sand;
-      }
+			
 
 	  
 
