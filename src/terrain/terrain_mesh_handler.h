@@ -239,6 +239,16 @@ namespace octet {
 
 				terrainMeshes[i]->render();
 			} 
+
+      for(int i=0; i!=seaMeshes.size();++i){
+        if (render_mode < 2) { 
+          seaMeshes[i]->set_mode(GL_TRIANGLES);
+        } else {
+          seaMeshes[i]->set_mode(GL_LINES);
+        } 
+
+        seaMeshes[i]->render();
+      } 
 		}
 
 	};
