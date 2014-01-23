@@ -3,7 +3,6 @@ namespace octet {
 	class terrain_mesh_handler {
 		dynarray<mesh*> terrainMeshes;
     dynarray<mesh*> seaMeshes;
-		float delta_height;
 		int textures_[6];
 
 
@@ -67,11 +66,6 @@ namespace octet {
           }			
 				}
 			}
-
-			float lowestValue = get_lowestValue(size, heightMap);
-			float highestValue = get_highestValue(size, heightMap);
-			delta_height = highestValue-lowestValue;
-
 		}
 
 
@@ -167,33 +161,7 @@ namespace octet {
 		}
 
 		
-
-
-		float get_highestValue(int size,  Point * const heightMap) {
-			float h=0;
-			for(int i=0; i<size*size; i++) {
-				float n = heightMap[i].getY();
-				if (n>h)
-					h = n;
-			}
-			//printf("h %f \n", h);
-			return h;
-		}
-
-
-		float get_lowestValue(int size,  Point * const heightMap) {
-			float l=0; 
-			for(int i=0; i<size*size; i++) {
-				float n = heightMap[i].getY();
-				if (n<l)
-					l=n;
-			}
-			//printf("l %f \n", l);
-			return l;
-		}
-
-		
-		void render(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode) {
+		void render(terrain_shader &t_shader, mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode, float delta_height) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -227,8 +195,6 @@ namespace octet {
 			glBindTexture(GL_TEXTURE_2D, textures_[5]); // specular
 			glActiveTexture(GL_TEXTURE6);
 
-
-			
 
 			for(int i=0; i!=terrainMeshes.size();++i){
 				if (render_mode < 2) { 

@@ -43,6 +43,9 @@ namespace octet {
 
 		float randomLow;
 		float randomHigh;
+
+    float deltaHeight;
+
 		int renderMode;
 		int render_mode; 
 		bool debug;
@@ -82,6 +85,8 @@ namespace octet {
 		    setPointsAsExistingValues();
 
 		    diamondSquareAlgorithm();
+
+        calculateDeltaHeight();
 
 		    generateVerticesWireFrameModel();
 	  
@@ -431,6 +436,36 @@ namespace octet {
 
 		}
 
+    void calculateDeltaHeight() 
+    {
+      float maxHeight = 0.0f;
+      float minHeight = 0.0f;
+
+      for(int i=0; i!=SEGMENTS;++i){
+        for(int j=0; j!=SEGMENTS;++j){
+          if(heightMap[i][j].getY() > maxHeight ){
+            maxHeight = heightMap[i][j].getY();
+          }
+
+          if( heightMap[i][j].getY() < minHeight ){
+            minHeight = heightMap[i][j].getY();
+          }
+        }
+      }
+
+      this->deltaHeight = maxHeight - minHeight;
+
+      setSeaLevel(minHeight);
+    }
+
+    void setSeaLevel(float minHeight){
+      for(int i=0; i!=SEGMENTS;++i){
+        for(int j=0; j!=SEGMENTS;++j){
+          seaMap[i][j].setY(minHeight+(deltaHeight*0.20));
+        }
+      }
+    }
+
 
 		void setPointsAsExistingValues() {
 		  for(int i=0; i!=SEGMENTS;++i){
@@ -625,7 +660,7 @@ namespace octet {
 			// shader rendering
 			if(renderMode == 0){
 
-				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld, render_mode);
+				terrain_mesh_handler_.render(terrain_shader_, modelToWorld, cameraToWorld, render_mode, deltaHeight);
 
 			  GLuint elementBuffer;
 			 // glGenBuffers(1, &elementBuffer);
@@ -634,5 +669,6 @@ namespace octet {
 			  
 			}
 		}
+
   };
 }  
