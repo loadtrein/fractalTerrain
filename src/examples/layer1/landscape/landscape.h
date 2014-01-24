@@ -21,10 +21,13 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
+		  Moltiplicator = 2,
 		  Terrain_Width = 400,
 		  Terrain_Length = 400,
 		  SEGMENTS = 257,
-		  S_SEGMENTS = 514, 
+		  Sea_Width = Terrain_Width-2,
+		  Sea_Length = Terrain_Length-2,
+		  S_SEGMENTS = SEGMENTS*Moltiplicator, 
 		};
 
 		color_shader color_shader_;
@@ -35,7 +38,7 @@ namespace octet {
 
 		Point heightMap [SEGMENTS] [SEGMENTS];
 
-		Point seaMap [S_SEGMENTS] [S_SEGMENTS];
+		Point seaMap[S_SEGMENTS] [S_SEGMENTS];
 
 		Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
 
@@ -85,13 +88,10 @@ namespace octet {
 
 			calculateDeltaHeight();
 
-			lower_perimeters();
+			
 
 		    generateVerticesWireFrameModel();
 	  
-			// terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
-			
-		
 			create_meshes();
 
 			obj_render = 0;
@@ -99,6 +99,8 @@ namespace octet {
 		}
 
 		void create_meshes() {
+			lower_perimeters();
+
 			terrain_mesh_handler_.create_mesh_from_map(S_SEGMENTS, *seaMap, 1);
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 			
@@ -487,12 +489,6 @@ namespace octet {
 			 heightMap[0][i].setY(min_height);
 			 heightMap[SEGMENTS-1][i].setY(min_height);
 		 }
-		 for(int i=0; i<S_SEGMENTS; ++i){
-			 heightMap[i][0].setY(min_height);
-			 heightMap[i][S_SEGMENTS-1].setY(min_height);
-			 heightMap[0][i].setY(min_height);
-			 heightMap[S_SEGMENTS-1][i].setY(min_height);
-		 }
 	}
 
 
@@ -530,8 +526,8 @@ namespace octet {
 
 
 		void setSeaMapInitialValue() {
-		  float widthIncrement = ((float)Terrain_Width)/((float)S_SEGMENTS-1.0f);
-		  float lenghtIncrement = ((float)Terrain_Length)/((float)S_SEGMENTS-1.0f);
+		  float widthIncrement = ((float)Sea_Width)/((float)S_SEGMENTS-1.0f);
+		  float lenghtIncrement = ((float)Sea_Length)/((float)S_SEGMENTS-1.0f);
 		  
 		  for(int i=0; i!=S_SEGMENTS;++i){
 			for(int j=0; j!=S_SEGMENTS;++j){

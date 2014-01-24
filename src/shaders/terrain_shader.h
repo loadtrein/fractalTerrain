@@ -15,6 +15,12 @@ namespace octet {
 	GLuint light_diffuse_index;
 	GLuint light_specular_index;
 	GLuint shininess_index;
+	
+	/** new stuff **/
+	GLuint light_uniforms_index;
+	GLuint num_lights_index;
+	/** new stuff end **/
+	
 
 	// index for multi textures
 	GLuint texture_samplers_index;
@@ -32,19 +38,23 @@ namespace octet {
 	    varying vec4 color_;
 		varying vec3 norm_;
 		varying vec2 uv_;
+		// new
+		varying vec3 tangent_;
+		varying vec3 bitangent_;
 		
 		// attributes are passed with OPENGL glVertexAttribPointer
         attribute vec4 pos;
 		attribute vec3 normal;
         attribute vec4 color;
 		attribute vec2 uv;
+		// new
+		attribute vec3 tangent;
+		attribute vec3 bitangent;
 
 		// from glUniform
         uniform mat4 modelToProjection;
 		uniform mat4 modelToCamera;
 		
-		
-      
         void main() {
 		  pos_ = pos;
 		  color_ = color;
@@ -52,28 +62,38 @@ namespace octet {
 
 		  // normal is calculated using the modelToCamera
 		  norm_ = (modelToCamera * vec4(normal,0)).xyz;
-		  gl_Position = modelToProjection * pos;
+		  //new
+		  tangent_ = (modelToCamera * vec4(tangent,0)).xyz;
+		  bitangent_ = (modelToCamera * vec4(bitangent,0)).xyz;
 		  
+		  gl_Position = modelToProjection * pos;
         }
       );
 
       // fragment shader
       const char fragment_shader[] = SHADER_STR(
-
 		varying vec4 color_;
 	    varying vec4 pos_;
 		varying vec3 norm_;
 		varying vec2 uv_;
+		//new
+		varying vec3 tangent_;
+		varying vec3 bitangent_;
+
+		/** new part **/ 
+		uniform vec4 light_uniforms[9];
+		uniform int num_lights;
 
 
 		uniform sampler2D samplers[7];
 
+		/*
 		uniform vec3 light_direction;
 		uniform vec4 light_diffuse;
 		uniform vec4 light_ambient;
 		uniform vec4 light_specular;
 		uniform float shininess;
-
+		*/
 		uniform float delta_h;
 		uniform float min_h;
 
@@ -89,6 +109,7 @@ namespace octet {
 			vec4 snow	= texture2D(samplers[3], uv_*8);
 
 			float height = (pos_.y - min_h) / delta_h;
+			vec4 heightColor = vec4(height/5, height/5, height/5, 1);
 
 			vec4 finalColor;
 
@@ -112,11 +133,51 @@ namespace octet {
 				}
 			//}
 
-			return  finalColor;
+			return  finalColor + heightColor;
+		}
+
+		vec4 bump_function() {
+			float shininess = 10;
+			vec3 bump = normalize(vec3(texture2D(samplers[5], uv_).xy-vec2(0.5, 0.5), 1));
+			vec3 nnormal = norm_;
+			vec3 diffuse_light = vec3(0.3, 0.3, 0.3);
+			vec3 specular_light = vec3(0, 0, 0);
+
+			for (int i=0; i<num_lights; ++i) {
+				vec3 light_direction = light_uniforms[i*4 +2].xyz;
+				vec3 light_color = light_uniforms[i*4+3].xyz;
+				vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
+
+				float diffuse_factor = max(dot(light_direction, nnormal), 0.6);
+				float specular_factor = pow(max(dot(half_direction, nnormal), 0.0), shininess)*diffuse_factor;
+
+				diffuse_light += diffuse_factor * light_color;
+				specular_light += specular_factor * light_color;
+			}
+
+			vec4 diffuse = texture_selector();
+			vec4 ambient = texture_selector();
+			vec4 emission = texture2D(samplers[4], uv_);
+			vec4 specular = texture2D(samplers[5], uv_);
+
+			vec3 ambient_light = light_uniforms[0].xyz;
+			
+			vec4 frag;
+			frag.xyz = 
+				ambient_light * ambient.xyz +
+				diffuse_light * diffuse.xyz +
+				emission.xyz +
+				specular_light * specular.xyz;
+
+			frag.w = diffuse.w;
+
+			return frag;
 		}
 		
 
       void main() {
+
+		  /*
 			  vec4 pos_norm = normalize(pos_);
 			  vec3 nNorm = normalize(norm_);
 			  float height = (pos_.y - min_h) / delta_h;
@@ -132,7 +193,7 @@ namespace octet {
 
 			  gl_FragColor =   
 				  (texture_selector())*light_ambient +
-				  texture_selector() * light_diffuse * diffuse_factor + 
+				  texture_selector() * light_diffuse * diffuse_factor +
 				  emission + 
 				  specular * light_specular * specular_factor;
 						
@@ -140,6 +201,11 @@ namespace octet {
 						  //texturr * light_diffuse * diffuse_factor;// +
 						  //emission + 
 						  //specular * light_specular * specular_factor;
+			*/
+
+
+
+		  gl_FragColor = bump_function(); 
 						
         }
       );
@@ -153,10 +219,16 @@ namespace octet {
       // the result is a shader program
       shader::init(vertex_shader, fragment_shader);
 
+	  /** new stuff **/ 
+	  light_uniforms_index = glGetUniformLocation(program(), "light_uniforms");
+	  num_lights_index = glGetUniformLocation(program(), "num_lights");
+	  /** new stuff end**/
+
       // extract the indices of the uniforms to use later
-      modelToProjection_index = glGetUniformLocation(program(), "modelToProjection");
+        modelToProjection_index = glGetUniformLocation(program(), "modelToProjection");
 	    modelToCamera_index = glGetUniformLocation(program(), "modelToCamera");
 
+		/*
 	    light_direction_index = glGetUniformLocation(program(), "light_direction");
 	    shininess_index = glGetUniformLocation(program(), "shininess");
 	    light_ambient_index = glGetUniformLocation(program(), "light_ambient");
@@ -164,6 +236,7 @@ namespace octet {
 	    light_specular_index = glGetUniformLocation(program(), "light_specular");
 	    // emissive_color_1_index = glGetUniformLocation(program(), "emissive_color_1");
 	    // emissive_color_2_index = glGetUniformLocation(program(), "emissive_color_2");
+		*/
 	    texture_samplers_index = glGetUniformLocation(program(), "samplers");
 
 	    delta_height_index = glGetUniformLocation(program(), "delta_h");
@@ -194,5 +267,21 @@ namespace octet {
 	    static const GLint samplers[] = { 0, 1, 2, 3, 4, 5, 6};
 	    glUniform1iv(texture_samplers_index, num_samplers, samplers);
     }
+
+	void render_bump(const mat4t &modelToProjection, const mat4t &modelToCamera, const vec4 *light_uniforms, int num_light_uniforms, int num_lights, float min_height, float delta_height) {
+		shader::render();
+
+		glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get());
+		glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get()); 
+
+		glUniform4fv(light_uniforms_index, num_light_uniforms, (float*)light_uniforms);
+		glUniform1i(num_lights_index, num_lights);
+
+		glUniform1f(delta_height_index, delta_height); 
+		glUniform1f(min_height_index, min_height);
+
+		static const GLint samplers[] = {0, 1, 2, 3, 4, 5, 6};
+		glUniform1iv(texture_samplers_index, 7, samplers);
+	}
   };
 }

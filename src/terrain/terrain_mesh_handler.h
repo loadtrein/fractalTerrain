@@ -3,10 +3,12 @@ namespace octet {
 	class terrain_mesh_handler {
 		terrain_shader terrain_shader_;
 		sea_shader sea_shader_;
-		material *seaMaterial;
-		material *terrainMaterial;
 		dynarray<mesh*> terrainMeshes;
 		dynarray<mesh*> seaMeshes;
+		vec4 light_uniforms_array[5];
+		vec3 light_rotation;
+		int num_light_uniforms;
+		int num_lights;
 		GLuint textures[7];
 		int t_length;
 		float angle;
@@ -34,18 +36,26 @@ namespace octet {
 			terrain_shader_.init();
 			sea_shader_.init();
 
+			light_rotation = vec3(45.0f, 30.0f, 0.0f);
+
+			memset(light_uniforms_array, 0, sizeof(light_uniforms_array));
+			light_uniforms_array[0] = vec4(0.1f, 0.1f, 0.1f, 50.0f);
+			light_uniforms_array[2] = vec4(sin(light_rotation[0]*3.1415926f/180.0f), sin(light_rotation[1]*3.1415926f/180.0f), cos(light_rotation[0]*3.1415926f/180.0f), 0.0f);
+			light_uniforms_array[3] = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			light_uniforms_array[4] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			num_light_uniforms = 5;
+			num_lights = 1;
+
 			// load textures 
 			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
 			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 			textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
-			textures[5] = resources::get_texture_handle(GL_RGB, "#111111");
-			textures[6] = resources::get_texture_handle(GL_RGB, "#ffffff");
+			textures[5] = resources::get_texture_handle(GL_RGB, "#000000");
+			textures[6] = resources::get_texture_handle(GL_RGB, "#000000");
 
 			angle = 0;
-
-			seaMaterial = new material("assets/terrain/sea.gif");
 		}
 
 
@@ -204,39 +214,19 @@ namespace octet {
 			mat4t worldToCamera;
 			mat4t modelToProjection = mat4t::build_camera_matrices(modelToCamera, worldToCamera, modelToWorld, cameraToWorld);
 
-			float shininess = 10.0f;
+			float shininess = 30.0f;
 			mat4t light_movement; 
-			light_movement.loadIdentity();
-			light_movement.rotateX(angle);
+
 			vec4 light_dir = vec4(sin(angle), 1, 0, 0).normalize()*worldToCamera;
 			vec4 light_ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
 			vec4 light_diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vec4 light_specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textures[0]);
-
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, textures[2]);
-
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, textures[3]);
-
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, textures[4]);
-
-			glActiveTexture(GL_TEXTURE5);
-			glBindTexture(GL_TEXTURE_2D, textures[5]); // emission
-
-			glActiveTexture(GL_TEXTURE6);
-			glBindTexture(GL_TEXTURE_2D, textures[6]); // specular
-
+			
 
 			if (obj_render==1 || obj_render==0) {
-				terrain_shader_.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, min_height, delta_height); 
+				//terrain_shader_.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, min_height, delta_height); 
+				terrain_shader_.render_bump(modelToProjection, modelToCamera, light_uniforms_array, num_light_uniforms, num_lights, min_height, delta_height);
 			
 			
 				for(int i=0; i!=terrainMeshes.size();++i){
@@ -265,6 +255,28 @@ namespace octet {
 			}
 
 			angle += 0.1f;
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, textures[2]);
+
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, textures[3]);
+
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, textures[4]);
+
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, textures[5]); // emission
+
+			glActiveTexture(GL_TEXTURE6);
+			glBindTexture(GL_TEXTURE_2D, textures[6]); // specular
+
 		}
 
 	};
