@@ -21,21 +21,21 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Terrain_Width = 300,
-		  Terrain_Length = 300,
+		  Terrain_Width = 400,
+		  Terrain_Length = 400,
 		  SEGMENTS = 257,
+		  S_SEGMENTS = 514, 
 		};
 
 		color_shader color_shader_;
-		terrain_shader terrain_shader_;
-    sea_shader sea_shader_;
+		
 
 		PerlinNoiseGenerator perlinNoise;
 		terrain_mesh_handler terrain_mesh_handler_;
 
 		Point heightMap [SEGMENTS] [SEGMENTS];
 
-    Point seaMap [SEGMENTS] [SEGMENTS];
+		Point seaMap [S_SEGMENTS] [S_SEGMENTS];
 
 		Tile wireFrameVertices [(SEGMENTS-1)*(SEGMENTS-1)];
 
@@ -45,10 +45,12 @@ namespace octet {
 		float randomLow;
 		float randomHigh;
 
-    float deltaHeight;
+		float deltaHeight;
+		float min_height;
 
 		int renderMode;
-		int render_mode; 
+		int render_mode;
+		int obj_render;
 		bool debug;
 
 	  public:
@@ -57,21 +59,11 @@ namespace octet {
 		// this is called once OpenGL is initialized
 		void app_init() {
 		    color_shader_.init();
-			terrain_shader_.init();
-      sea_shader_.init();
-
-			GLuint textures[7];
-			// load textures 
-			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
-			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
-			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
-			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
-      textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
-			textures[5] = resources::get_texture_handle(GL_RGB, "#000000");
-			textures[6] = resources::get_texture_handle(GL_RGB, "#ffffff");
+			
+			
 
 			//initialize terrain_mesh
-			terrain_mesh_handler_.init(textures);
+			terrain_mesh_handler_.init();
 
 		    cameraToWorld.loadIdentity();
 		    cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
@@ -83,24 +75,33 @@ namespace octet {
       
 		    setMapsInitialValues();
 
+			setSeaMapInitialValue();
+
 		    setInitialCorners();
 
 		    setPointsAsExistingValues();
 
 		    diamondSquareAlgorithm();
 
-        calculateDeltaHeight();
+			calculateDeltaHeight();
+
+			lower_perimeters();
 
 		    generateVerticesWireFrameModel();
 	  
 			// terrain_mesh_handler_.create_mesh(wireFrameVertices, sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]), SEGMENTS-1);
 			
-      terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap, 1);
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
-      
-
 		
+			create_meshes();
 
+			obj_render = 0;
+
+		}
+
+		void create_meshes() {
+			terrain_mesh_handler_.create_mesh_from_map(S_SEGMENTS, *seaMap, 1);
+			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+			
 		}
 
 
@@ -227,7 +228,7 @@ namespace octet {
 						float di = heightMap[i][j].getY() - heightMap[i+u][j+v].getY();
 
 						if(di > talus){
-							heightMap[i+u][j+v].setY( heightMap[i+u][j+v].getY() + 0.3*(dmax - talus) * (di/dtotal));
+							heightMap[i+u][j+v].setY( heightMap[i+u][j+v].getY() + 0.3f*(dmax - talus) * (di/dtotal));
 					    } 
 					  }
 				  }
@@ -373,7 +374,7 @@ namespace octet {
 						int row = i + distance/2;
 						int column = j + distance/2;
 
-						int y_ = heightMap[row][column].getY();
+						int y_ = int(heightMap[row][column].getY());
 
 						 if(y_ == 0.0f){
 						   heightMap[row][column].setY(getDiamondGeneratedValue(row,column,distance/2,rLow,rHigh));
@@ -457,26 +458,42 @@ namespace octet {
       }
 
       this->deltaHeight = maxHeight - minHeight;
-
+	  min_height = minHeight;
       setSeaLevel(minHeight);
     }
 
     void setSeaLevel(float minHeight){
-      for(int i=0; i!=SEGMENTS;++i){
-        for(int j=0; j!=SEGMENTS;++j){
-          seaMap[i][j].setY(minHeight+(deltaHeight*0.20));
+      for(int i=0; i!=S_SEGMENTS;++i){
+        for(int j=0; j!=S_SEGMENTS;++j){
+          seaMap[i][j].setY(minHeight+(deltaHeight*0.20f));
         }
       }
     }
 
 
-		void setPointsAsExistingValues() {
-		  for(int i=0; i!=SEGMENTS;++i){
+	void setPointsAsExistingValues() {
+		for(int i=0; i!=SEGMENTS;++i){
 			for(int j=0; j!=SEGMENTS;++j){
-			  heightMap[i][j].setJustGenerated(false);
+				heightMap[i][j].setJustGenerated(false);
 			}
-		  }
 		}
+	}
+
+
+	void lower_perimeters() {
+		 for(int i=0; i<SEGMENTS; ++i){
+			 heightMap[i][0].setY(min_height);
+			 heightMap[i][SEGMENTS-1].setY(min_height);
+			 heightMap[0][i].setY(min_height);
+			 heightMap[SEGMENTS-1][i].setY(min_height);
+		 }
+		 for(int i=0; i<S_SEGMENTS; ++i){
+			 heightMap[i][0].setY(min_height);
+			 heightMap[i][S_SEGMENTS-1].setY(min_height);
+			 heightMap[0][i].setY(min_height);
+			 heightMap[S_SEGMENTS-1][i].setY(min_height);
+		 }
+	}
 
 
 
@@ -498,22 +515,33 @@ namespace octet {
 		//-----------------------------------HEIGHT MAP INITIAL VALUES-----------------------------------------------
 
 		void setMapsInitialValues() {
-		  float widhtIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
+		  float widthIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
 		  float lenghtIncrement = ((float)Terrain_Length)/((float)SEGMENTS-1.0f);
 
 		  for(int i=0; i!=SEGMENTS;++i){
 			for(int j=0; j!=SEGMENTS;++j){
-			  heightMap[i][j].setX((float)(widhtIncrement*((float)i)));
+			  heightMap[i][j].setX((float)(widthIncrement*((float)i)));
 			  heightMap[i][j].setY(0.0);
 			  heightMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
-
-        seaMap[i][j].setX((float)(widhtIncrement*((float)i)));
-        seaMap[i][j].setY(0.0);
-        seaMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
 			}
 		  }
-
 		}
+
+
+
+		void setSeaMapInitialValue() {
+		  float widthIncrement = ((float)Terrain_Width)/((float)S_SEGMENTS-1.0f);
+		  float lenghtIncrement = ((float)Terrain_Length)/((float)S_SEGMENTS-1.0f);
+		  
+		  for(int i=0; i!=S_SEGMENTS;++i){
+			for(int j=0; j!=S_SEGMENTS;++j){
+			  seaMap[i][j].setX((float)(widthIncrement*((float)i)));
+			  seaMap[i][j].setY(0.0);
+              seaMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
+			}
+		  }
+		}
+
 
 
 		void setTerrainParameters(){
@@ -545,6 +573,14 @@ namespace octet {
 
 		  if(is_key_down('S')){
 			cameraToWorld.translate(0,0,1.5);
+		  }
+
+		  if (is_key_down('Z')) {
+			  cameraToWorld.rotateX(-1.5f);
+		  }
+
+		  if (is_key_down('X')) {
+			  cameraToWorld.rotateX(1.5f);
 		  }
 
 		  if(is_key_down(key_up)){
@@ -605,16 +641,17 @@ namespace octet {
 
 			setMapsInitialValues();
 
+			setSeaMapInitialValue();
+
 			setInitialCorners();
 
 			diamondSquareAlgorithm();
 
-      calculateDeltaHeight();
+			calculateDeltaHeight();
 
 			generateVerticesWireFrameModel();
       
-      terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *seaMap, 1);
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+			create_meshes(); 
 
 			printf("Regenerated...\n");
 		  }
@@ -631,6 +668,18 @@ namespace octet {
 			  if(render_mode>2)
 				  render_mode =0;
 			  else render_mode++; 
+		  }
+
+		  if (is_key_down('1')) {
+			  obj_render = 0;
+		  }
+
+		  if (is_key_down('2')) {
+			  obj_render = 1;
+		  }
+
+		  if (is_key_down('3')) {
+			  obj_render = 2;
 		  }
 
 		}
@@ -666,10 +715,8 @@ namespace octet {
 			// shader rendering
 			if(renderMode == 0){
 
-				terrain_mesh_handler_.render(terrain_shader_, sea_shader_, modelToWorld, cameraToWorld, render_mode, deltaHeight);
+			  terrain_mesh_handler_.render(modelToWorld, cameraToWorld, render_mode, min_height, deltaHeight, obj_render);
 
-			  GLuint elementBuffer;
-			 // glGenBuffers(1, &elementBuffer);
 			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			  glBindBuffer(GL_ARRAY_BUFFER, 0);
 			  

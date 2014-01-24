@@ -1,38 +1,70 @@
 namespace octet {
 
 	class terrain_mesh_handler {
+		terrain_shader terrain_shader_;
+		sea_shader sea_shader_;
+		material *seaMaterial;
+		material *terrainMaterial;
 		dynarray<mesh*> terrainMeshes;
-    dynarray<mesh*> seaMeshes;
-		int textures_[7];
+		dynarray<mesh*> seaMeshes;
+		GLuint textures[7];
+		int t_length;
+		float angle;
 
+		static dynarray<image *> *imageArray_;
+
+		const char *getTextures() {
+				const char *files[] = {
+				  "assets/terrain/sand.gif",
+				  "assets/terrain/grass.gif",
+				  "assets/terrain/rock.gif",
+				  "assets/terrain/snow.gif",
+				  "assets/terrain/sea.gif",
+				  0
+				};
+
+			  return *files;
+		}
 
 	public:
 		terrain_mesh_handler() {}
 
 
-		void init(GLuint textures[]) {
-			
-			for (int i=0; i<7; i++) {
-				textures_[i] = textures[i];
-			}
+		void init() {
+			terrain_shader_.init();
+			sea_shader_.init();
+
+			// load textures 
+			textures[0]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/sand.gif");
+			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
+			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
+			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
+			textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
+			textures[5] = resources::get_texture_handle(GL_RGB, "#111111");
+			textures[6] = resources::get_texture_handle(GL_RGB, "#ffffff");
+
+			angle = 0;
+
+			seaMaterial = new material("assets/terrain/sea.gif");
 		}
 
 
 
 		void create_mesh_from_map(int size,  Point * const heightMap, int meshType) {
-			
-      if(meshType == 0){
-        terrainMeshes.reset();
-      }else if(meshType == 1){
-        seaMeshes.reset();
-      }
-
+			if(meshType == 0){
+				terrainMeshes.reset();
+			}else if(meshType == 1){
+				seaMeshes.reset();
+				t_length = size;
+				printf("size %i \n", size); 
+			}
+			 
 			int numMeshSegments = 0;
 			int mesh_size = 0;
 
 			if (size > 128) {
 				int base = (int)size/128;
-				int exponential = (int) std::powf(base, 2);
+				int exponential = int(std::powf((float)base, 2.0f));
 				numMeshSegments = exponential;//size/128 * exponential;
 				mesh_size = 128;
 			} else{
@@ -41,7 +73,7 @@ namespace octet {
 			}
 
 		
-			int terrainSide_size = (int)( mesh_size*sqrt(numMeshSegments));
+			int terrainSide_size = int(mesh_size*sqrt((float)numMeshSegments));
 
 			for (int index_i=0; index_i<terrainSide_size; index_i+=mesh_size) {
 				for (int index_j=0; index_j<terrainSide_size; index_j+=mesh_size) {
@@ -161,7 +193,7 @@ namespace octet {
 		}
 
 		
-		void render(terrain_shader &t_shader, sea_shader &s_shader,mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode, float delta_height) {
+		void render(mat4t &modelToWorld, mat4t &cameraToWorld, int render_mode, float min_height, float delta_height, int obj_render) {
 			// glEnable(GL_CULL_FACE);
 			// glCullFace(GL_BACK);
 			// glFrontFace(GL_CW);
@@ -172,58 +204,67 @@ namespace octet {
 			mat4t worldToCamera;
 			mat4t modelToProjection = mat4t::build_camera_matrices(modelToCamera, worldToCamera, modelToWorld, cameraToWorld);
 
-			float shininess = 30.0f;
-
-			vec4 light_dir = vec4(0, 1, 0, 0).normalize()*worldToCamera;
+			float shininess = 10.0f;
+			mat4t light_movement; 
+			light_movement.loadIdentity();
+			light_movement.rotateX(angle);
+			vec4 light_dir = vec4(sin(angle), 1, 0, 0).normalize()*worldToCamera;
 			vec4 light_ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
 			vec4 light_diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vec4 light_specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		
-			t_shader.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, delta_height); 
-
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textures_[0]);
+			glBindTexture(GL_TEXTURE_2D, textures[0]);
 
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, textures_[1]);
+			glBindTexture(GL_TEXTURE_2D, textures[1]);
 
 			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, textures_[2]);
+			glBindTexture(GL_TEXTURE_2D, textures[2]);
 
 			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, textures_[3]);
+			glBindTexture(GL_TEXTURE_2D, textures[3]);
 
-      glActiveTexture(GL_TEXTURE4);
-      glBindTexture(GL_TEXTURE_2D, textures_[4]);
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, textures[4]);
 
 			glActiveTexture(GL_TEXTURE5);
-			glBindTexture(GL_TEXTURE_2D, textures_[5]); // emission
+			glBindTexture(GL_TEXTURE_2D, textures[5]); // emission
 
 			glActiveTexture(GL_TEXTURE6);
-			glBindTexture(GL_TEXTURE_2D, textures_[6]); // specular
+			glBindTexture(GL_TEXTURE_2D, textures[6]); // specular
 
 
-			for(int i=0; i!=terrainMeshes.size();++i){
-				if (render_mode < 2) { 
-						terrainMeshes[i]->set_mode(GL_TRIANGLES);
-				} else {
-						terrainMeshes[i]->set_mode(GL_LINES);
+			if (obj_render==1 || obj_render==0) {
+				terrain_shader_.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, min_height, delta_height); 
+			
+			
+				for(int i=0; i!=terrainMeshes.size();++i){
+					if (render_mode < 2) { 
+							terrainMeshes[i]->set_mode(GL_TRIANGLES);
+					} else {
+							terrainMeshes[i]->set_mode(GL_LINES);
+					} 
+
+					terrainMeshes[i]->render();
 				} 
+			}
+			
+			if (obj_render==2 || obj_render==0) {
+				sea_shader_.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, angle, t_length); 
+				
+				for(int i=0; i!=seaMeshes.size();++i){
+					if (render_mode < 2) { 
+						seaMeshes[i]->set_mode(GL_TRIANGLES);
+					} else {
+						seaMeshes[i]->set_mode(GL_LINES);
+					} 
 
-				terrainMeshes[i]->render();
-			} 
+				seaMeshes[i]->render();
+				} 
+			}
 
-      s_shader.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular); 
-
-      for(int i=0; i!=seaMeshes.size();++i){
-        if (render_mode < 2) { 
-          seaMeshes[i]->set_mode(GL_TRIANGLES);
-        } else {
-          seaMeshes[i]->set_mode(GL_LINES);
-        } 
-
-        seaMeshes[i]->render();
-      } 
+			angle += 0.1f;
 		}
 
 	};

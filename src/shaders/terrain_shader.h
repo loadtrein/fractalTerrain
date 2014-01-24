@@ -20,6 +20,7 @@ namespace octet {
 	GLuint texture_samplers_index;
 
 	GLuint delta_height_index; 
+	GLuint min_height_index;
 
   public:
     void init() {
@@ -41,7 +42,7 @@ namespace octet {
 		// from glUniform
         uniform mat4 modelToProjection;
 		uniform mat4 modelToCamera;
-		uniform float tilingFactor;
+		
 		
       
         void main() {
@@ -51,8 +52,8 @@ namespace octet {
 
 		  // normal is calculated using the modelToCamera
 		  norm_ = (modelToCamera * vec4(normal,0)).xyz;
-      gl_Position = modelToProjection * pos;
-		  //gl_TexCoord[0] = gl_MultiTexCoord0 * tilingFactor;
+		  gl_Position = modelToProjection * pos;
+		  
         }
       );
 
@@ -74,22 +75,20 @@ namespace octet {
 		uniform float shininess;
 
 		uniform float delta_h;
+		uniform float min_h;
 
 
 		vec4 texture_selector() {
 			vec3 nNorm = normalize(norm_);
 			vec4 pNorm = normalize(pos_);
 
-			// load textures 
-			vec4 sand	= texture2D(samplers[0], uv_*8);
+			// load terrain textures 
+			vec4 sand	= texture2D(samplers[0], uv_*10);
 			vec4 grass	= texture2D(samplers[1], uv_*8);
 			vec4 rock	= texture2D(samplers[2], uv_*8);
 			vec4 snow	= texture2D(samplers[3], uv_*8);
 
-			vec4 emission = texture2D(samplers[4], uv_);
-			vec4 specular = texture2D(samplers[5], uv_);
-
-			float height = (pos_.y + delta_h/2) / delta_h;
+			float height = (pos_.y - min_h) / delta_h;
 
 			vec4 finalColor;
 
@@ -120,15 +119,22 @@ namespace octet {
       void main() {
 			  vec4 pos_norm = normalize(pos_);
 			  vec3 nNorm = normalize(norm_);
-			  float height = (pos_.y + delta_h/2) / (delta_h+delta_h/5);
-			  vec4 heigh_color = vec4(height, height, height, 1);
+			  float height = (pos_.y - min_h) / delta_h;
+			  vec4 heigh_color = vec4(height/2, height/2, height/2, 1);
 			
 			  vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
 			  float diffuse_factor = max(dot(light_direction, nNorm), 0.0);
 			  float specular_factor = pow(max(dot(half_direction, nNorm), 0.0), shininess); 
-	
+			  
+			  // load emission and specual textures;
+			  vec4 emission = texture2D(samplers[4], uv_);
+			  vec4 specular = texture2D(samplers[5], uv_);
 
-			  gl_FragColor =   texture_selector();// + heigh_color; //+ texturr * light_diffuse * diffuse_factor + emission; // * light_ambient + heigh_color; // + heigh_color; // vec4(slope*pos_norm.y, 0.0f, 0.0f, 1.0f);
+			  gl_FragColor =   
+				  (texture_selector())*light_ambient +
+				  texture_selector() * light_diffuse * diffuse_factor + 
+				  emission + 
+				  specular * light_specular * specular_factor;
 						
 						  //texturr * light_ambient + 
 						  //texturr * light_diffuse * diffuse_factor;// +
@@ -161,11 +167,12 @@ namespace octet {
 	    texture_samplers_index = glGetUniformLocation(program(), "samplers");
 
 	    delta_height_index = glGetUniformLocation(program(), "delta_h");
+		min_height_index = glGetUniformLocation(program(), "min_h"); 
 
 	  
     }
 
-    void render(const mat4t &modelToProjection, const mat4t &modelToCamera, const vec4 &light_direction, float shininess, vec4 &light_ambient, vec4 &light_diffuse, vec4 &light_specular, float delta_height, int num_samplers = 7) {
+    void render(const mat4t &modelToProjection, const mat4t &modelToCamera, const vec4 &light_direction, float shininess, vec4 &light_ambient, vec4 &light_diffuse, vec4 &light_specular, float min_height, float delta_height, int num_samplers = 7) {
       // tell openGL to use the program
       shader::render();
 
@@ -182,7 +189,7 @@ namespace octet {
 	    glUniform1f(shininess_index, shininess);
 
 	    glUniform1f(delta_height_index, delta_height); 
-
+		glUniform1f(min_height_index, min_height);
 
 	    static const GLint samplers[] = { 0, 1, 2, 3, 4, 5, 6};
 	    glUniform1iv(texture_samplers_index, num_samplers, samplers);
