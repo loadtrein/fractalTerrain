@@ -149,7 +149,7 @@ namespace octet {
 				vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
 
 				float diffuse_factor = max(dot(light_direction, nnormal), 0.6);
-				float specular_factor = pow(max(dot(half_direction, nnormal), 0.0), shininess)*diffuse_factor;
+				float specular_factor = pow(max(dot(half_direction, nnormal), 0.6), shininess)*diffuse_factor;
 
 				diffuse_light += diffuse_factor * light_color;
 				specular_light += specular_factor * light_color;
@@ -157,8 +157,8 @@ namespace octet {
 
 			vec4 diffuse = texture_selector();
 			vec4 ambient = texture_selector();
-			vec4 emission = texture2D(samplers[4], uv_);
-			vec4 specular = texture2D(samplers[5], uv_);
+			vec4 emission = texture2D(samplers[5], uv_);
+			vec4 specular = texture2D(samplers[6], uv_);
 
 			vec3 ambient_light = light_uniforms[0].xyz;
 			

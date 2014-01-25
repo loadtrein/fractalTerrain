@@ -53,7 +53,7 @@ namespace octet {
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
 			textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
 			textures[5] = resources::get_texture_handle(GL_RGB, "#000000");
-			textures[6] = resources::get_texture_handle(GL_RGB, "#000000");
+			textures[6] = resources::get_texture_handle(GL_RGB, "#111111");
 
 			angle = 0;
 		}
@@ -65,8 +65,7 @@ namespace octet {
 				terrainMeshes.reset();
 			}else if(meshType == 1){
 				seaMeshes.reset();
-				t_length = size;
-				printf("size %i \n", size); 
+				t_length = size; 
 			}
 			 
 			int numMeshSegments = 0;
@@ -241,7 +240,7 @@ namespace octet {
 			}
 			
 			if (obj_render==2 || obj_render==0) {
-				sea_shader_.render(modelToProjection, modelToCamera, light_dir, shininess, light_ambient, light_diffuse, light_specular, angle, t_length); 
+				sea_shader_.render(modelToProjection, modelToCamera,  light_uniforms_array, num_light_uniforms, num_lights, angle, t_length); 
 				
 				for(int i=0; i!=seaMeshes.size();++i){
 					if (render_mode < 2) { 
