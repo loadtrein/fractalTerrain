@@ -21,13 +21,10 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Moltiplicator = 2,
-		  Terrain_Width = 400,
-		  Terrain_Length = 400,
-		  SEGMENTS = 257,
-		  Sea_Width = Terrain_Width-2,
-		  Sea_Length = Terrain_Length-2,
-		  S_SEGMENTS = SEGMENTS*Moltiplicator, 
+		  Terrain_Width = 100,
+		  Terrain_Length =100,
+		  SEGMENTS = 65,
+		  S_SEGMENTS = SEGMENTS*2, 
 		};
 
 		color_shader color_shader_;
@@ -78,23 +75,19 @@ namespace octet {
       
 		    setMapsInitialValues();
 
-			setSeaMapInitialValue();
-
 		    setInitialCorners();
 
 		    setPointsAsExistingValues();
 
 		    diamondSquareAlgorithm();
 
-			calculateDeltaHeight();
-
-			
+			  calculateDeltaHeight();
 
 		    generateVerticesWireFrameModel();
 	  
-			create_meshes();
+			  create_meshes();
 
-			obj_render = 0;
+			  obj_render = 0;
 
 		}
 
@@ -511,31 +504,35 @@ namespace octet {
 		//-----------------------------------HEIGHT MAP INITIAL VALUES-----------------------------------------------
 
 		void setMapsInitialValues() {
-		  float widthIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
-		  float lenghtIncrement = ((float)Terrain_Length)/((float)SEGMENTS-1.0f);
+		  float widthTerrainIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
+		  float lenghtTerrainIncrement = ((float)Terrain_Length)/((float)SEGMENTS-1.0f);
+
+      float widthSeaIncrement = ((float)Terrain_Width - widthTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
+      float lenghtSeaIncrement = ((float)Terrain_Length - lenghtTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
 
 		  for(int i=0; i!=SEGMENTS;++i){
-			for(int j=0; j!=SEGMENTS;++j){
-			  heightMap[i][j].setX((float)(widthIncrement*((float)i)));
-			  heightMap[i][j].setY(0.0);
-			  heightMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
-			}
+        for(int j=0; j!=SEGMENTS;++j){
+          heightMap[i][j].setX((float)(widthTerrainIncrement*((float)i)));
+          heightMap[i][j].setY(0.0);
+          heightMap[i][j].setZ((float)(lenghtTerrainIncrement*((float)j)));
+        }
 		  }
-		}
 
 
+      float seaValueX = heightMap[1][1].getX();
+      float setValueZ = heightMap[1][1].getZ();
 
-		void setSeaMapInitialValue() {
-		  float widthIncrement = ((float)Sea_Width)/((float)S_SEGMENTS-1.0f);
-		  float lenghtIncrement = ((float)Sea_Length)/((float)S_SEGMENTS-1.0f);
-		  
-		  for(int i=0; i!=S_SEGMENTS;++i){
-			for(int j=0; j!=S_SEGMENTS;++j){
-			  seaMap[i][j].setX((float)(widthIncrement*((float)i)));
-			  seaMap[i][j].setY(0.0);
-              seaMap[i][j].setZ((float)(lenghtIncrement*((float)j)));
-			}
-		  }
+      for(int i=0; i!=S_SEGMENTS;++i){
+        for(int j=0; j!=S_SEGMENTS;++j){
+          seaMap[i][j].setX(seaValueX);
+          seaMap[i][j].setY(0.0);
+          seaMap[i][j].setZ(setValueZ);
+          setValueZ+=widthSeaIncrement;
+        }
+        setValueZ = heightMap[1][1].getZ();
+        seaValueX+=lenghtSeaIncrement;
+      }
+      
 		}
 
 
@@ -636,8 +633,6 @@ namespace octet {
 			printf("Regenerating terrain...\n");
 
 			setMapsInitialValues();
-
-			setSeaMapInitialValue();
 
 			setInitialCorners();
 
