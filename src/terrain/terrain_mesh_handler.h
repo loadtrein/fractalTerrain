@@ -80,8 +80,7 @@ namespace octet {
 				numMeshSegments = 1;
 				mesh_size = size-1;
 			}
-
-		
+			
 			int terrainSide_size = int(mesh_size*sqrt((float)numMeshSegments));
 
 			for (int index_i=0; index_i<terrainSide_size; index_i+=mesh_size) {
