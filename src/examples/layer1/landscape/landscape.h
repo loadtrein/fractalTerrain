@@ -83,7 +83,7 @@ namespace octet {
 
 			  calculateDeltaHeight();
 
-		    generateVerticesWireFrameModel();
+		    // generateVerticesWireFrameModel();
 	  
 			  create_meshes();
 
@@ -92,8 +92,10 @@ namespace octet {
 		}
 
 		void create_meshes() {
-			
-      lower_perimeters();
+
+			//sea_perturbation(100.0,100.0);
+
+			lower_perimeters();
 
 			terrain_mesh_handler_.create_mesh_from_map(S_SEGMENTS, *seaMap, 1);
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
@@ -179,6 +181,29 @@ namespace octet {
 		  for (int i = 0; i != SEGMENTS; ++i){
 			for (int j = 0; j != SEGMENTS; ++j){
 			  heightMap[i][j].setY(temp[i][j]);
+			}
+		  }
+		}
+
+		void sea_perturbation(float f, float d){
+		  int u, v;
+      
+		  float temp [S_SEGMENTS][S_SEGMENTS];
+
+		  for (int i = 0; i != S_SEGMENTS; ++i){
+			for (int j = 0; j != S_SEGMENTS; ++j){
+
+			  u = i + (int)(perlinNoise.Noise(f * i / (float)S_SEGMENTS, f * j / (float)S_SEGMENTS, 0) * d);
+			  v = j + (int)(perlinNoise.Noise(f * i / (float)S_SEGMENTS, f * j / (float)S_SEGMENTS, 1) * d);
+			  if (u < 0) u = 0; if (u >= S_SEGMENTS) u = S_SEGMENTS - 1;
+			  if (v < 0) v = 0; if (v >= S_SEGMENTS) v = S_SEGMENTS - 1;
+			  temp[i][j]=seaMap[u][v].getY();
+			}
+		  }
+
+		  for (int i = 0; i != S_SEGMENTS; ++i){
+			for (int j = 0; j != S_SEGMENTS; ++j){
+			  seaMap[i][j].setY(temp[i][j]);
 			}
 		  }
 		}
@@ -603,28 +628,28 @@ namespace octet {
 		  if(is_key_down(key_f1)){
 			printf("Rows and Columns Smoothed\n");
 			smootFilterRowsColumnsDisplacement();
-			generateVerticesWireFrameModel();
+			// generateVerticesWireFrameModel();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f2)){
 			printf("3x3 Box Smoothed\n");
 			smooth3x3BoxFilter();
-			generateVerticesWireFrameModel();
+			// generateVerticesWireFrameModel();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f3)){
 			printf("PERTURBATION\n");
 			perturbation(10.0,10.0);
-			generateVerticesWireFrameModel();
+			// generateVerticesWireFrameModel();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f4)){
 			printf("THERMAL EROSION\n");
 			thermalErosion(4/(float)SEGMENTS);
-			generateVerticesWireFrameModel();
+			// generateVerticesWireFrameModel();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
@@ -641,7 +666,7 @@ namespace octet {
 
 			calculateDeltaHeight();
 
-			generateVerticesWireFrameModel();
+			// generateVerticesWireFrameModel();
       
 			create_meshes(); 
 

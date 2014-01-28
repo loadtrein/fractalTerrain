@@ -22,7 +22,7 @@ namespace octet {
       printf("creating shader program\n");
 
       GLsizei length;
-      char buf[1024];
+      char buf[2048];
       // create our vertex shader and compile it
       GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
       glShaderSource(vertex_shader, 1, &vs, NULL);

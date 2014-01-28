@@ -23,6 +23,7 @@ namespace octet {
   GLuint cubeMap_sampler_index;
 
 
+
   public:
     void init() {
      
@@ -50,6 +51,9 @@ namespace octet {
 		uniform float angle;
 		uniform int t_length;
 
+		float rand(vec2 co){
+			return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+		}
       
         void main() {
 		  pos_ = pos;
@@ -57,9 +61,10 @@ namespace octet {
 		  uv_ = uv;
 		  //norm_ = normal;
 
-		  norm_ = (modelToCamera * vec4(normal,0)).xyz;
-		  tangent_ = (modelToCamera * vec4(tangent,0)).xyz;
-		  bitangent_ = (modelToCamera * vec4(bitangent,0)).xyz;
+		  norm_ = (modelToCamera * vec4(normal,0.0)).xyz;
+		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
+		  bitangent_ = (modelToCamera * vec4(bitangent,0.0)).xyz;
+		  vec4 npos = normalize(pos);
 
 		  float half_length =  float(t_length/2);
 		  float t_lengthf = float(t_length);
@@ -67,10 +72,13 @@ namespace octet {
 		  vec2 wave_vector = vec2(0.5-uv.x, 0.5-uv.y);
 		  float wave = cos(angle - wave_vector.x  * (pos.x-half_length) - wave_vector.y  * (pos.z-half_length));
 		  
-		  vec3 new_norm = vec3(wave_vector.x, wave, wave_vector.y);
+		  vec3 nnoise = noise3(npos.xyz);
+		  float randPos = rand(vec2(pos.x, pos.z+angle/10000));
+
+		  vec3 new_norm = vec3(wave_vector.x, wave + randPos/2, wave_vector.y);
 		  norm_ = (modelToCamera * vec4(new_norm,0)).xyz;
 
-		  vec4 new_pos = vec4(pos.x, pos.y + wave, pos.z, pos.w);
+		  vec4 new_pos = vec4(pos.x, pos.y + randPos/2 + wave , pos.z, pos.w);
 		 
 		  gl_Position = modelToProjection * new_pos;
         }
@@ -95,18 +103,18 @@ namespace octet {
 
 		
       void main() {
-			  float shininess = 50;
-			vec3 bump = normalize(vec3(texture2D(samplers[5], uv_).xy-vec2(0.5, 0.5), 1));
+			float shininess = 50.0;
+			vec3 bump = normalize(vec3(texture2D(samplers[5], uv_).xy-vec2(0.5, 0.5), 1.0));
 			vec3 nnormal = norm_;
 			vec3 diffuse_light = vec3(0.3, 0.3, 0.3);
-			vec3 specular_light = vec3(0, 0, 0);
+			vec3 specular_light = vec3(0.0, 0.0, 0.0);
 
 			for (int i=0; i<num_lights; ++i) {
 				vec3 light_direction = light_uniforms[i*4 +2].xyz;
 				vec3 light_color = light_uniforms[i*4+3].xyz;
-				vec3 half_direction = normalize(light_direction + vec3(0, 0, 1));
+				vec3 half_direction = normalize(light_direction + vec3(0.0, 0.0, 1.0));
 
-				float diffuse_factor = max(dot(light_direction, nnormal), 0.0);
+				float diffuse_factor = max(dot(light_direction, nnormal), 0.2);
 				float specular_factor = pow(max(dot(half_direction, nnormal), 0.7), shininess)*diffuse_factor;
 
 				diffuse_light += diffuse_factor * light_color;
