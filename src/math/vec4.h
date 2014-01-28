@@ -269,6 +269,10 @@ namespace octet {
       return vec4(v[0], v[1], 0, 0);
     }
 
+    vec4 xyww() const{
+      return vec4(v[0], v[1], v[3], v[3]);
+    }
+
     // get xyz0
     vec4 xyz0() const {
       return vec4(v[0], v[1], v[2], 0);

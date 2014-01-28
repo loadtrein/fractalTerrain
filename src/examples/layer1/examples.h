@@ -35,7 +35,7 @@ namespace octet {
     else if (!strcmp(name, "duck")) return new duck_app(argc, argv);       //  duck sample: continue here to learn how to load collada geometry
     else if (!strcmp(name, "bump")) return new bump_app(argc, argv);       //  bump map sample: continue here to learn how to draw bump mapped textures
     else if (!strcmp(name, "physics")) return new physics_app(argc, argv); //  physics sample: continue here to learn how to annimate using physics
-    else if (!strcmp(name, "landscape")) return new Landscape(argc, argv); //  physics sample: continue here to learn how to annimate using physics
+    else if (!strcmp(name, "landscape")) return new Landscape(argc, argv); //  Fractal terrain
     else return 0;
   }
 

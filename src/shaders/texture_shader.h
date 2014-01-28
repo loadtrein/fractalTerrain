@@ -41,7 +41,7 @@ namespace octet {
         uniform sampler2D sampler;
         void main() { gl_FragColor = texture2D(sampler, uv_); }
       );
-    
+
       // use the common shader code to compile and link the shaders
       // the result is a shader program
       shader::init(vertex_shader, fragment_shader);

@@ -9,6 +9,7 @@ namespace octet {
     // index for model space to projection space matrix
     GLuint modelToProjection_index; 
 	GLuint modelToCamera_index;
+  GLuint cameraToWorld_index;
 
 	GLuint light_uniforms_index;
 	GLuint num_lights_index;
@@ -18,6 +19,8 @@ namespace octet {
 
 	// index for multi textures
 	GLuint texture_samplers_index;
+
+  GLuint cubeMap_sampler_index;
 
 
   public:
@@ -52,8 +55,9 @@ namespace octet {
 		  pos_ = pos;
 		  color_ = color;
 		  uv_ = uv;
-		  
-		  // norm_ = (modelToCamera * vec4(normal,0)).xyz;
+		  //norm_ = normal;
+
+		  norm_ = (modelToCamera * vec4(normal,0)).xyz;
 		  tangent_ = (modelToCamera * vec4(tangent,0)).xyz;
 		  bitangent_ = (modelToCamera * vec4(bitangent,0)).xyz;
 
@@ -86,6 +90,9 @@ namespace octet {
 
 		uniform sampler2D samplers[7];
 
+    uniform samplerCube sampler;
+    uniform vec4 cameraToWorld;
+
 		
       void main() {
 			  float shininess = 50;
@@ -106,20 +113,28 @@ namespace octet {
 				specular_light += specular_factor * light_color;
 			}
 
-			vec4 diffuse = texture2D(samplers[4], uv_*8);
-			vec4 ambient = texture2D(samplers[4], uv_*8);
+      vec4 color = texture2D(samplers[4], uv_*8);
+      color.a = 0.5;
+
+			vec4 diffuse = color;
+			vec4 ambient = color;
 			vec4 emission = texture2D(samplers[5], uv_);
 			vec4 specular = texture2D(samplers[6], uv_);
 
 			vec3 ambient_light = light_uniforms[0].xyz;
+
+     /* vec3 eyeDir = pos_- cameraToWorld;
 			
+      vec3 reflectedDirection = normalize(reflect(normalize(eyeDir), normalize(norm_)));
+      reflectedDirection.y = -reflectedDirection.y;*/
+
 			gl_FragColor.xyz = 
 				ambient_light * ambient.xyz +
 				diffuse_light * diffuse.xyz +
 				emission.xyz +
-				specular_light * specular.xyz;
+				specular_light * specular.xyz    /* + textureCube(sampler, reflectedDirection) */ ;
 
-			gl_FragColor.w = diffuse.w;				
+			gl_FragColor.w = diffuse.w; 
         }
       );
 
@@ -133,19 +148,20 @@ namespace octet {
 
       // extract the indices of the uniforms to use later
       modelToProjection_index = glGetUniformLocation(program(), "modelToProjection");
-	  modelToCamera_index = glGetUniformLocation(program(), "modelToCamera");
+      modelToCamera_index = glGetUniformLocation(program(), "modelToCamera");
+      cameraToWorld_index =  glGetUniformLocation(program(), "cameraToWorld");
 
-	  light_uniforms_index = glGetUniformLocation(program(), "light_uniforms");
-	  num_lights_index = glGetUniformLocation(program(), "num_lights");
+      light_uniforms_index = glGetUniformLocation(program(), "light_uniforms");
+      num_lights_index = glGetUniformLocation(program(), "num_lights");
 	
-	  angle_index = glGetUniformLocation(program(), "angle");
-	  terrain_length_index = glGetUniformLocation(program(), "t_length");
+      angle_index = glGetUniformLocation(program(), "angle");
+      terrain_length_index = glGetUniformLocation(program(), "t_length");
 
-	  texture_samplers_index = glGetUniformLocation(program(), "samplers");
+      texture_samplers_index = glGetUniformLocation(program(), "samplers");
 	  
     }
 
-    void render(const mat4t &modelToProjection, const mat4t &modelToCamera, const vec4 *light_uniforms, int num_light_uniforms, int num_lights, float angle, int terrain_length) {
+    void render(const mat4t &modelToProjection, const mat4t &modelToCamera,const mat4t &cameraToWorld, const vec4 *light_uniforms, int num_light_uniforms, int num_lights, float angle, int terrain_length, int sampler) {
       // tell openGL to use the program
       shader::render();
 
@@ -154,12 +170,15 @@ namespace octet {
 	    // glUniform4fv(emissive_color_2_index, 1, emissive_color_2.get());
 	    glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get()); 
 	    glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get());
+      glUniformMatrix4fv(cameraToWorld_index,1,GL_FALSE,cameraToWorld.get());
 
 		glUniform4fv(light_uniforms_index, num_light_uniforms, (float*)light_uniforms);
 		glUniform1i(num_lights_index, num_lights);
 
 		glUniform1f(angle_index, angle);
 		glUniform1i(terrain_length_index, terrain_length);
+
+    glUniform1i(cubeMap_sampler_index, sampler);
 
 	    static const GLint samplers[] = { 0, 1, 2, 3, 4, 5, 6};
 	    glUniform1iv(texture_samplers_index, 7, samplers);

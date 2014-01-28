@@ -21,9 +21,9 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Terrain_Width = 100,
-		  Terrain_Length =100,
-		  SEGMENTS = 65,
+		  Terrain_Width = 400,
+		  Terrain_Length = 400,
+		  SEGMENTS = 257,
 		  S_SEGMENTS = SEGMENTS*2, 
 		};
 
@@ -92,7 +92,8 @@ namespace octet {
 		}
 
 		void create_meshes() {
-			lower_perimeters();
+			
+      lower_perimeters();
 
 			terrain_mesh_handler_.create_mesh_from_map(S_SEGMENTS, *seaMap, 1);
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
@@ -553,19 +554,19 @@ namespace octet {
 
 		void keyboard() {
 		  if(is_key_down('D')){
-			cameraToWorld.translate(1.5,0,0);
+			cameraToWorld.translate(2.5,0,0);
 		  }
 
 		  if(is_key_down('A')){
-			cameraToWorld.translate(-1.5,0,0);
+			cameraToWorld.translate(-2.5,0,0);
 		  }
 
 		  if(is_key_down('W')){
-			cameraToWorld.translate(0,0,-1.5);
+			cameraToWorld.translate(0,0,-2.5);
 		  }
 
 		  if(is_key_down('S')){
-			cameraToWorld.translate(0,0,1.5);
+			cameraToWorld.translate(0,0,2.5);
 		  }
 
 		  if (is_key_down('Z')) {
@@ -577,11 +578,11 @@ namespace octet {
 		  }
 
 		  if(is_key_down(key_up)){
-			cameraToWorld.translate(0,+1.5,0);
+			cameraToWorld.translate(0,+2.5,0);
 		  }
 
 		  if(is_key_down(key_down)){
-			cameraToWorld.translate(0,-1.5,0);
+			cameraToWorld.translate(0,-2.5,0);
 		  }
 
 		  if(is_key_down('E')){
@@ -683,7 +684,7 @@ namespace octet {
 			glViewport(x, y, w, h);
 
 			// background color
-			glClearColor(0.93f, 0.94f, 0.85f, 1);
+			glClearColor(0.53f, 0.81f, 0.98f, 1);
 			//glClearColor(0, 0, 0, 1);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -199,9 +199,6 @@
     <ClInclude Include="..\..\src\examples\layer1\landscape\landscape.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\terrain\terrain_mesh_handler.h">
-      <Filter>octet\terrain</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\terrain\terrain_util.h">
       <Filter>octet\terrain</Filter>
     </ClInclude>
@@ -218,6 +215,12 @@
       <Filter>octet\shaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shaders\sea_shader.h">
+      <Filter>octet\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\terrain\terrain_mesh_handler.h">
+      <Filter>octet\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shaders\sky_box_shader.h">
       <Filter>octet\shaders</Filter>
     </ClInclude>
   </ItemGroup>

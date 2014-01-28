@@ -160,6 +160,7 @@ static char *get_sprintf_buffer() {
 #include "../shaders/bump_shader.h"
 #include "../shaders/terrain_shader.h"
 #include "../shaders/sea_shader.h"
+#include "../shaders/sky_box_shader.h"
 
 
 #include "../physics/physics.h"

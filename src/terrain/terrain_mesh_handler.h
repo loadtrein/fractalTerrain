@@ -3,6 +3,7 @@ namespace octet {
 	class terrain_mesh_handler {
 		terrain_shader terrain_shader_;
 		sea_shader sea_shader_;
+    sky_box_shader sky_box_shader_;
 		dynarray<mesh*> terrainMeshes;
 		dynarray<mesh*> seaMeshes;
 		vec4 light_uniforms_array[5];
@@ -13,20 +14,10 @@ namespace octet {
 		int t_length;
 		float angle;
 
-		static dynarray<image *> *imageArray_;
-
-		const char *getTextures() {
-				const char *files[] = {
-				  "assets/terrain/sand.gif",
-				  "assets/terrain/grass.gif",
-				  "assets/terrain/rock.gif",
-				  "assets/terrain/snow.gif",
-				  "assets/terrain/sea.gif",
-				  0
-				};
-
-			  return *files;
-		}
+    mesh skyboxMesh;
+    GLuint sky_box_textureObj;
+    dynarray<uint8_t> buffer;
+    dynarray<uint8_t> images;
 
 	public:
 		terrain_mesh_handler() {}
@@ -35,6 +26,7 @@ namespace octet {
 		void init() {
 			terrain_shader_.init();
 			sea_shader_.init();
+      sky_box_shader_.init();
 
 			light_rotation = vec3(45.0f, 30.0f, 0.0f);
 
@@ -51,14 +43,55 @@ namespace octet {
 			textures[1]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/grass.gif"); 
 			textures[2]	= resources::get_texture_handle(GL_RGBA, "assets/terrain/rock.gif");
 			textures[3] = resources::get_texture_handle(GL_RGBA, "assets/terrain/snow.gif");
-			textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea.gif");
+			textures[4] = resources::get_texture_handle(GL_RGBA, "assets/terrain/sea2.gif");
 			textures[5] = resources::get_texture_handle(GL_RGB, "#000000");
 			textures[6] = resources::get_texture_handle(GL_RGB, "#111111");
+
+
+      skyboxMesh.make_cube(1000.0f);
+      sky_box_textureObj = 0;
+      createCubeMap();
+
 
 			angle = 0;
 		}
 
+    uint8_t* getImage(const char *url){
 
+      buffer.reset();
+      images.reset();
+
+      app_utils::get_url(buffer,url);
+      uint16_t format = 0;
+      uint16_t width = 0;
+      uint16_t height = 0;
+      const unsigned char *src = &buffer[0];
+      const unsigned char *src_max = src + buffer.size();
+
+      gif_decoder dec;
+      dec.get_image(images, format, width, height, src, src_max);
+
+      return &images[0];
+    }
+
+    void createCubeMap(){
+
+      glGenTextures(1, &sky_box_textureObj);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, sky_box_textureObj);
+
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox1.gif"));
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox2.gif"));
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox3.gif"));
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox4.gif"));
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox5.gif"));
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage("assets/terrain/skybox6.gif"));
+
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
 
 		void create_mesh_from_map(int size,  Point * const heightMap, int meshType) {
 			if(meshType == 0){
@@ -239,8 +272,11 @@ namespace octet {
 				} 
 			}
 			
+      glActiveTexture(GL_TEXTURE7);
+      glBindTexture(GL_TEXTURE_CUBE_MAP,sky_box_textureObj);
+
 			if (obj_render==2 || obj_render==0) {
-				sea_shader_.render(modelToProjection, modelToCamera,  light_uniforms_array, num_light_uniforms, num_lights, angle, t_length); 
+				sea_shader_.render(modelToProjection, modelToCamera, cameraToWorld,  light_uniforms_array, num_light_uniforms, num_lights, angle, t_length, GL_TEXTURE7); 
 				
 				for(int i=0; i!=seaMeshes.size();++i){
 					if (render_mode < 2) { 
@@ -251,9 +287,22 @@ namespace octet {
 
 				seaMeshes[i]->render();
 				} 
-			}
-
+			}  
+      
 			angle += 0.1f;
+
+      mat4t skyToWorld = mat4t(1.0f);
+      skyToWorld.translate(cameraToWorld.row(3).x(), cameraToWorld.row(3).y(), cameraToWorld.row(3).z());
+
+      modelToProjection = mat4t::build_projection_matrix(skyToWorld, cameraToWorld);
+
+      sky_box_shader_.render(modelToProjection,modelToCamera,GL_TEXTURE7);
+
+      glDepthMask(GL_FALSE);
+
+      skyboxMesh.render();
+
+      glDepthMask(GL_TRUE);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, textures[0]);
