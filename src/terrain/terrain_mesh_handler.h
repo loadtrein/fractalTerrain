@@ -93,7 +93,7 @@ namespace octet {
       glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
 
-		void create_mesh_from_map(int size,  Point * const heightMap, int meshType) {
+		void create_mesh_from_map(int size,  Point * const map, int meshType) {
 			if(meshType == 0){
 				terrainMeshes.reset();
 			}else if(meshType == 1){
@@ -124,7 +124,7 @@ namespace octet {
 						
 					for (int i=index_i; i<index_i+mesh_size; i++) {
 						for (int j=index_j; j<index_j+mesh_size; j++) {
-							add_face(size, i, j, &m_builder, heightMap);
+							add_face(size, i, j, &m_builder, map);
 						}
 					}
 
@@ -169,10 +169,10 @@ namespace octet {
 			m_builder->add_vertex(v3, n3, 0, 1);
 			*/
 
-			m_builder->add_vertex(v0, n0, ((float)i/size), ((float)j/size));
-			m_builder->add_vertex(v1, n1, ((float)i/size), ((float)(j+1)/size));
-			m_builder->add_vertex(v2, n2, ((float)(i+1)/size), ((float)(j+1)/size));
-			m_builder->add_vertex(v3, n3, ((float)(i+1)/size), ((float)j/size)); 
+			m_builder->add_vertex(v0, vec4(0,1,0,0), ((float)i/size), ((float)j/size));
+      m_builder->add_vertex(v1, vec4(0,1,0,0), ((float)i/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v2, vec4(0,1,0,0), ((float)(i+1)/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v3, vec4(0,1,0,0), ((float)(i+1)/size), ((float)j/size)); 
 
 			
 			

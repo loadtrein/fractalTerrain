@@ -553,10 +553,10 @@ namespace octet {
           seaMap[i][j].setX(seaValueX);
           seaMap[i][j].setY(0.0);
           seaMap[i][j].setZ(setValueZ);
-          setValueZ+=widthSeaIncrement;
+          setValueZ+=lenghtSeaIncrement;
         }
         setValueZ = heightMap[1][1].getZ();
-        seaValueX+=lenghtSeaIncrement;
+        seaValueX+=widthSeaIncrement;
       }
       
 		}

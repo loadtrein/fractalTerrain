@@ -59,28 +59,31 @@ namespace octet {
 		  pos_ = pos;
 		  color_ = color;
 		  uv_ = uv;
-		  //norm_ = normal;
+//		  norm_ = normal;
 
 		  norm_ = (modelToCamera * vec4(normal,0.0)).xyz;
-		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
+/*		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
 		  bitangent_ = (modelToCamera * vec4(bitangent,0.0)).xyz;
 		  vec4 npos = normalize(pos);
 
 		  float half_length =  float(t_length/2);
 		  float t_lengthf = float(t_length);
 
-		  vec2 wave_vector = vec2(0.5-uv.x, 0.5-uv.y);
+		  vec2 wave_vector = vec2(0.5/2-uv.x, 0.5/2-uv.y);
 		  float wave = cos(angle - wave_vector.x  * (pos.x-half_length) - wave_vector.y  * (pos.z-half_length));
 		  
 		  vec3 nnoise = noise3(npos.xyz);
 		  float randPos = rand(vec2(pos.x, pos.z+angle/10000));
 
-		  vec3 new_norm = vec3(wave_vector.x, wave + randPos/2, wave_vector.y);
+		  vec3 new_norm = vec3(wave_vector.x, wave, wave_vector.y);
 		  norm_ = (modelToCamera * vec4(new_norm,0)).xyz;
 
-		  vec4 new_pos = vec4(pos.x, pos.y + randPos/2 + wave , pos.z, pos.w);
+		  vec4 new_pos = vec4(pos.x, pos.y + wave , pos.z, pos.w); 
 		 
-		  gl_Position = modelToProjection * new_pos;
+		  gl_Position = modelToProjection * new_pos; */
+
+
+      gl_Position = modelToProjection * pos_;
         }
       );
 
@@ -131,16 +134,18 @@ namespace octet {
 
 			vec3 ambient_light = light_uniforms[0].xyz;
 
-     /* vec3 eyeDir = pos_- cameraToWorld;
+      vec4 eyeDir = pos_- cameraToWorld;
 			
       vec3 reflectedDirection = normalize(reflect(normalize(eyeDir), normalize(norm_)));
-      reflectedDirection.y = -reflectedDirection.y;*/
+      //reflectedDirection.y = -reflectedDirection.y;
 
-			gl_FragColor.xyz = 
+      vec3 sky_box_Color = textureCube(sampler, reflectedDirection);
+
+			gl_FragColor.xyz = /*mix(
 				ambient_light * ambient.xyz +
 				diffuse_light * diffuse.xyz +
 				emission.xyz +
-				specular_light * specular.xyz    /* + textureCube(sampler, reflectedDirection) */ ;
+				specular_light * specular.xyz , */sky_box_Color /*, 1.0)*/;
 
 			gl_FragColor.w = diffuse.w; 
         }
