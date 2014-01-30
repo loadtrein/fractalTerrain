@@ -62,7 +62,7 @@ namespace octet {
 //		  norm_ = normal;
 
 		  norm_ = (modelToCamera * vec4(normal,0.0)).xyz;
-/*		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
+		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
 		  bitangent_ = (modelToCamera * vec4(bitangent,0.0)).xyz;
 		  vec4 npos = normalize(pos);
 
@@ -80,10 +80,10 @@ namespace octet {
 
 		  vec4 new_pos = vec4(pos.x, pos.y + wave , pos.z, pos.w); 
 		 
-		  gl_Position = modelToProjection * new_pos; */
+		  gl_Position = modelToProjection * new_pos; 
 
 
-      gl_Position = modelToProjection * pos_;
+     // gl_Position = modelToProjection * pos_;
         }
       );
 

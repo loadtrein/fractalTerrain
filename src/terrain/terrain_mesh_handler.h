@@ -161,18 +161,11 @@ namespace octet {
 			n2 = get_norm( size, i+1, j+1, heightMap);
 			n3 = get_norm( size, i+1,   j, heightMap);
 			
-			// add vertices with normals
-			/*
-			m_builder->add_vertex(v0, n0, 0, 0);
-			m_builder->add_vertex(v1, n1, 0, 1);
-			m_builder->add_vertex(v2, n2, 1, 1);
-			m_builder->add_vertex(v3, n3, 0, 1);
-			*/
 
-			m_builder->add_vertex(v0, vec4(0,1,0,0), ((float)i/size), ((float)j/size));
-      m_builder->add_vertex(v1, vec4(0,1,0,0), ((float)i/size), ((float)(j+1)/size));
-      m_builder->add_vertex(v2, vec4(0,1,0,0), ((float)(i+1)/size), ((float)(j+1)/size));
-      m_builder->add_vertex(v3, vec4(0,1,0,0), ((float)(i+1)/size), ((float)j/size)); 
+			m_builder->add_vertex(v0, n0, ((float)i/size), ((float)j/size));
+      m_builder->add_vertex(v1, n1, ((float)i/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v2, n2, ((float)(i+1)/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v3, n3, ((float)(i+1)/size), ((float)j/size)); 
 
 			
 			

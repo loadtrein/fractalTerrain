@@ -21,8 +21,6 @@ namespace octet {
 	class Landscape : public octet::app {
 
 		enum {   
-		  Terrain_Width = 400,
-		  Terrain_Length = 400,
 		  SEGMENTS = 257,
 		  S_SEGMENTS = SEGMENTS*2, 
 		};
@@ -42,10 +40,13 @@ namespace octet {
 		mat4t cameraToWorld;
 		mat4t modelToWorld;
 
+    float terrain_width;
+    float terrain_length;
 		float randomLow;
 		float randomHigh;
 
 		float deltaHeight;
+    float max_height;
 		float min_height;
 
 		int renderMode;
@@ -60,18 +61,17 @@ namespace octet {
 		void app_init() {
 		    color_shader_.init();
 			
-			
-
-			//initialize terrain_mesh
-			terrain_mesh_handler_.init();
+			  //initialize terrain_mesh
+			  terrain_mesh_handler_.init();
 
 		    cameraToWorld.loadIdentity();
-		    cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
 		    modelToWorld.loadIdentity();
 
 		    srand (static_cast <unsigned> (time(0)));
 
 		    setTerrainParameters();
+
+        cameraToWorld.translate(this->terrain_width/2,6,this->terrain_length*1.6);
       
 		    setMapsInitialValues();
 
@@ -463,30 +463,28 @@ namespace octet {
 
     void calculateDeltaHeight() 
     {
-      float maxHeight = 0.0f;
-      float minHeight = 0.0f;
-
       for(int i=0; i!=SEGMENTS;++i){
         for(int j=0; j!=SEGMENTS;++j){
-          if(heightMap[i][j].getY() > maxHeight ){
-            maxHeight = heightMap[i][j].getY();
+          if(heightMap[i][j].getY() > this->max_height ){
+            this->max_height = heightMap[i][j].getY();
           }
 
-          if( heightMap[i][j].getY() < minHeight ){
-            minHeight = heightMap[i][j].getY();
+          if(heightMap[i][j].getY() < this->min_height ){
+            this->min_height = heightMap[i][j].getY();
           }
         }
       }
 
-      this->deltaHeight = maxHeight - minHeight;
-	  min_height = minHeight;
-      setSeaLevel(minHeight);
+      this->deltaHeight =  this->max_height - this->min_height;
+
+      setSeaLevel();
     }
 
-    void setSeaLevel(float minHeight){
+    void setSeaLevel(){
+
       for(int i=0; i!=S_SEGMENTS;++i){
         for(int j=0; j!=S_SEGMENTS;++j){
-          seaMap[i][j].setY(minHeight+(deltaHeight*0.20f));
+          seaMap[i][j].setY(this->min_height+(this->deltaHeight*0.20f));
         }
       }
     }
@@ -530,11 +528,11 @@ namespace octet {
 		//-----------------------------------HEIGHT MAP INITIAL VALUES-----------------------------------------------
 
 		void setMapsInitialValues() {
-		  float widthTerrainIncrement = ((float)Terrain_Width)/((float)SEGMENTS-1.0f);
-		  float lenghtTerrainIncrement = ((float)Terrain_Length)/((float)SEGMENTS-1.0f);
+		  float widthTerrainIncrement = ((float)this->terrain_width)/((float)SEGMENTS-1.0f);
+		  float lenghtTerrainIncrement = ((float)this->terrain_length)/((float)SEGMENTS-1.0f);
 
-      float widthSeaIncrement = ((float)Terrain_Width - widthTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
-      float lenghtSeaIncrement = ((float)Terrain_Length - lenghtTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
+      float widthSeaIncrement = ((float)this->terrain_width - widthTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
+      float lenghtSeaIncrement = ((float)this->terrain_length - lenghtTerrainIncrement*2)/((float)S_SEGMENTS-1.0f);
 
 		  for(int i=0; i!=SEGMENTS;++i){
         for(int j=0; j!=SEGMENTS;++j){
@@ -564,11 +562,20 @@ namespace octet {
 
 
 		void setTerrainParameters(){
+
+      this->terrain_width = 400;
+      this->terrain_length = 400;
 		  this->randomLow = -100.0f;
 		  this->randomHigh = 100.0f;
+      
+      this->deltaHeight = 0.0f;
+      this->max_height = 0.0f;
+      this->min_height = 0;
+
 		  this->debug = false;
 		  this->renderMode = 0;
 		  this->render_mode = 0; 
+
 		}
 
 
@@ -622,7 +629,7 @@ namespace octet {
 		  //Default camera view
 		  if(is_key_down(key_space)){
 			cameraToWorld.loadIdentity();
-			cameraToWorld.translate(Terrain_Width/2,6,Terrain_Length*1.6);
+			cameraToWorld.translate(this->terrain_width/2,6,this->terrain_length*1.6);
 		  }
 
 		  if(is_key_down(key_f1)){
