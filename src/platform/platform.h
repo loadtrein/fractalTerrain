@@ -161,6 +161,8 @@ static char *get_sprintf_buffer() {
 #include "../shaders/terrain_shader.h"
 #include "../shaders/sea_shader.h"
 #include "../shaders/sky_box_shader.h"
+#include "../shaders/texture_shader_alpha.h"
+#include "../shaders/texture_shader_no_alpha.h"
 
 
 #include "../physics/physics.h"

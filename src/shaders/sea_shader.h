@@ -80,10 +80,10 @@ namespace octet {
 
 		  vec4 new_pos = vec4(pos.x, pos.y + wave , pos.z, pos.w); 
 		 
-		  gl_Position = modelToProjection * new_pos; 
+		  gl_Position = modelToProjection * new_pos;
 
 
-     // gl_Position = modelToProjection * pos_;
+      //gl_Position = modelToProjection * pos_;
         }
       );
 

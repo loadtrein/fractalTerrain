@@ -26,7 +26,7 @@ namespace octet {
 		};
 
 		color_shader color_shader_;
-		
+		texture_shader_alpha texture_shader_;
 
 		PerlinNoiseGenerator perlinNoise;
 		terrain_mesh_handler terrain_mesh_handler_;
@@ -49,17 +49,26 @@ namespace octet {
     float max_height;
 		float min_height;
 
+    float cameraFactor;
+
 		int renderMode;
-		int render_mode;
+    int wire;
 		int obj_render;
 		bool debug;
 
+    //Hud font
+    GLuint font_texture;
+
+    // information for our text
+    bitmap_font font;
+
 	  public:
-		Landscape(int argc, char **argv) : app(argc, argv) {}
+		Landscape(int argc, char **argv) : app(argc, argv), font(512, 256, "assets/big.fnt") {}
 
 		// this is called once OpenGL is initialized
 		void app_init() {
 		    color_shader_.init();
+        texture_shader_.init();
 			
 			  //initialize terrain_mesh
 			  terrain_mesh_handler_.init();
@@ -83,11 +92,13 @@ namespace octet {
 
 			  calculateDeltaHeight();
 
-		    // generateVerticesWireFrameModel();
+		     generateVerticesWireFrameModel();
 	  
 			  create_meshes();
 
 			  obj_render = 0;
+
+        font_texture = resources::get_texture_handle(GL_RGBA, "assets/big_0_black.gif");
 
 		}
 
@@ -568,15 +579,50 @@ namespace octet {
 		  this->randomLow = -100.0f;
 		  this->randomHigh = 100.0f;
       
-      this->deltaHeight = 0.0f;
-      this->max_height = 0.0f;
-      this->min_height = 0;
+      resetMaxMinDeltaHeight();
+
+
+      this->cameraFactor = 2.5f;
 
 		  this->debug = false;
 		  this->renderMode = 0;
-		  this->render_mode = 0; 
+      wire = 0;
 
 		}
+
+    void resetMaxMinDeltaHeight() 
+    {
+      this->deltaHeight = 0.0f;
+      this->max_height = 0.0f;
+      this->min_height = 0;
+    }
+
+
+    //Draw text on the screen
+    void draw_text(texture_shader &shader, float x, float y, float z, float scale, const char *text) {
+      mat4t modelToWorld = cameraToWorld;
+      modelToWorld.translate(x, y, z);
+      modelToWorld.scale(scale, scale, 1);
+      mat4t modelToProjection = mat4t::build_projection_matrix(modelToWorld, cameraToWorld);
+
+      enum { max_quads = 80 };
+      bitmap_font::vertex vertices[max_quads*4];
+      uint32_t indices[max_quads*6];
+      aabb bb(vec3(0, 0, 0), vec3(256, 256, 0));
+
+      unsigned num_quads = font.build_mesh(bb, vertices, indices, max_quads, text, 0);
+      glActiveTexture(GL_TEXTURE8);
+      glBindTexture(GL_TEXTURE_2D, font_texture);
+
+      shader.render(modelToProjection, 8);
+
+      glVertexAttribPointer(attribute_pos, 3, GL_FLOAT, GL_FALSE, sizeof(bitmap_font::vertex), (void*)&vertices[0].x );
+      glEnableVertexAttribArray(attribute_pos);
+      glVertexAttribPointer(attribute_uv, 3, GL_FLOAT, GL_FALSE, sizeof(bitmap_font::vertex), (void*)&vertices[0].u );
+      glEnableVertexAttribArray(attribute_uv);
+
+      glDrawElements(GL_TRIANGLES, num_quads * 6, GL_UNSIGNED_INT, indices);
+    } 
 
 
 		void simulate() {
@@ -586,43 +632,43 @@ namespace octet {
 
 		void keyboard() {
 		  if(is_key_down('D')){
-			cameraToWorld.translate(2.5,0,0);
+			cameraToWorld.translate(cameraFactor,0,0);
 		  }
 
 		  if(is_key_down('A')){
-			cameraToWorld.translate(-2.5,0,0);
+			cameraToWorld.translate(-cameraFactor,0,0);
 		  }
 
 		  if(is_key_down('W')){
-			cameraToWorld.translate(0,0,-2.5);
+			cameraToWorld.translate(0,0,-cameraFactor);
 		  }
 
 		  if(is_key_down('S')){
-			cameraToWorld.translate(0,0,2.5);
+			cameraToWorld.translate(0,0,cameraFactor);
 		  }
 
-		  if (is_key_down('Z')) {
-			  cameraToWorld.rotateX(-1.5f);
+		  if (is_key_down('I')) {
+			  cameraToWorld.rotateX(-2.5);
 		  }
 
-		  if (is_key_down('X')) {
-			  cameraToWorld.rotateX(1.5f);
+		  if (is_key_down('O')) {
+			  cameraToWorld.rotateX(2.5);
 		  }
 
 		  if(is_key_down(key_up)){
-			cameraToWorld.translate(0,+2.5,0);
+			cameraToWorld.translate(0,cameraFactor,0);
 		  }
 
 		  if(is_key_down(key_down)){
-			cameraToWorld.translate(0,-2.5,0);
+			cameraToWorld.translate(0,-cameraFactor,0);
 		  }
 
 		  if(is_key_down('E')){
-			cameraToWorld.rotateY(-2.0);
+			cameraToWorld.rotateY(-2.5);
 		  }
 
 		  if(is_key_down('Q')){
-			cameraToWorld.rotateY(2.0);
+			cameraToWorld.rotateY(2.5);
 		  } 
 
 
@@ -635,28 +681,32 @@ namespace octet {
 		  if(is_key_down(key_f1)){
 			printf("Rows and Columns Smoothed\n");
 			smootFilterRowsColumnsDisplacement();
-			// generateVerticesWireFrameModel();
+			generateVerticesWireFrameModel();
+      lower_perimeters();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f2)){
 			printf("3x3 Box Smoothed\n");
 			smooth3x3BoxFilter();
-			// generateVerticesWireFrameModel();
+			generateVerticesWireFrameModel();
+      lower_perimeters();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f3)){
 			printf("PERTURBATION\n");
 			perturbation(10.0,10.0);
-			// generateVerticesWireFrameModel();
+			generateVerticesWireFrameModel();
+      lower_perimeters();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f4)){
 			printf("THERMAL EROSION\n");
 			thermalErosion(4/(float)SEGMENTS);
-			// generateVerticesWireFrameModel();
+			generateVerticesWireFrameModel();
+      lower_perimeters();
 			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
@@ -671,28 +721,66 @@ namespace octet {
 
 			diamondSquareAlgorithm();
 
+      resetMaxMinDeltaHeight();
+
 			calculateDeltaHeight();
 
-			// generateVerticesWireFrameModel();
+			generateVerticesWireFrameModel();
       
 			create_meshes(); 
 
-			printf("Regenerated...\n");
+			printf("Regenerated... \n");
 		  }
 
-		  if(is_key_down('T')){
-			this->renderMode = 0;
-		  }
-
-		  if(is_key_down('Y')){
-			this->renderMode = 1;
-		  }
 
 		  if(is_key_down('M')) {
-			  if(render_mode>2)
-				  render_mode =0;
-			  else render_mode++; 
+			  if(renderMode>2)
+				  renderMode =0;
+			  else renderMode++; 
 		  }
+
+      if(is_key_down('Z')){
+        this->terrain_length+=10;
+        this->cameraFactor+=0.05;
+      }
+
+      if(is_key_down('X')){
+        if(terrain_length > 10){
+          this->terrain_length-=10;
+          if(cameraFactor > 2.5){
+            this->cameraFactor-=0.05;
+          }
+
+        }
+      }
+
+      if(is_key_down('C')){
+        this->terrain_width+=10;
+        this->cameraFactor+=0.05;
+      }
+
+      if(is_key_down('V')){
+        if(terrain_width > 10){
+          this->terrain_width-=10;
+          if(cameraFactor > 2.5){
+            this->cameraFactor-=0.05;
+          }
+        }
+      }
+
+      if(is_key_down('B')){
+        if(randomHigh >= 0 && randomLow <= 0){
+          this->randomHigh+=10;
+          this->randomLow-=10;
+        }
+      }
+
+      if(is_key_down('N')){
+        if(randomHigh > 0 && randomLow < 0){
+          this->randomHigh-=10;
+          this->randomLow+=10;
+        }
+      }
 
 		  if (is_key_down('1')) {
 			  obj_render = 0;
@@ -705,6 +793,16 @@ namespace octet {
 		  if (is_key_down('3')) {
 			  obj_render = 2;
 		  }
+
+      if (is_key_down('4')) {
+        wire = 0;
+      }
+
+      if (is_key_down('5')) {
+        wire = 1;
+      }
+
+
 
 		}
 
@@ -729,22 +827,37 @@ namespace octet {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			// wireframe rendering
-			if(renderMode == 1){
-			  for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
-				  wireFrameRendering(wireFrameVertices[i]);
-			  } 
-			}
+      char title[25];
 
-			// shader rendering
-			if(renderMode == 0){
+      sprintf(title, "--Terrain parameters--\n");
 
-			  terrain_mesh_handler_.render(modelToWorld, cameraToWorld, render_mode, min_height, deltaHeight, obj_render);
+      draw_text(texture_shader_, - 1.8, + 1.8, - 3 ,1.0f/256, title);
 
-			  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-			  glBindBuffer(GL_ARRAY_BUFFER, 0);
+      char text[100];
+
+      sprintf(text, "Length: %d\nWidth: %d\nRoughness: %d",((int)this->terrain_length), ((int)this->terrain_width), ((int)this->randomHigh));
+
+      draw_text(texture_shader_, - 1.8, + 1.2, - 3 ,1.0f/256, text);
+
+
+
+      if(wire == 1){
+      	  for(int i=0;i!=sizeof(wireFrameVertices)/sizeof(wireFrameVertices[0]);++i){
+      			  wireFrameRendering(wireFrameVertices[i]);
+      		  } 
+      }else{
+
+
+
+
+      terrain_mesh_handler_.render(modelToWorld, cameraToWorld, renderMode, min_height, deltaHeight, obj_render);
+
+      }
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
 			  
-			}
+			
 		}
 
   };

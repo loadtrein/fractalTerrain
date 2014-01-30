@@ -68,6 +68,8 @@
     <ClInclude Include="..\..\src\shaders\terrain_shader.h" />
     <ClInclude Include="..\..\src\shaders\terrain_shader_new.h" />
     <ClInclude Include="..\..\src\shaders\texture_shader.h" />
+    <ClInclude Include="..\..\src\shaders\texture_shader_alpha.h" />
+    <ClInclude Include="..\..\src\shaders\texture_shader_no_alpha.h" />
     <ClInclude Include="..\..\src\terrain\perlin_noise_generator.h" />
     <ClInclude Include="..\..\src\terrain\terrain_mesh_handler.h" />
     <ClInclude Include="..\..\src\terrain\terrain_noise.h" />

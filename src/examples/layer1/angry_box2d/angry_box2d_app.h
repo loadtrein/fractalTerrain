@@ -115,7 +115,7 @@ namespace octet {
     mat4t cameraToWorld;
 
     // shader to draw a textured triangle
-    texture_shader texture_shader_;
+    texture_shader_no_alpha texture_shader_;
 
     enum {
       num_sound_sources = 32,

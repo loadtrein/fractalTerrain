@@ -459,7 +459,7 @@ namespace octet {
       printf("{"); v[0].dump(); printf(", "); v[1].dump(); printf(", "); v[2].dump(); printf(", "); v[3].dump(); printf("}\n");
     }*/
     // helper function for building a simple camera
-    static mat4t build_projection_matrix(const mat4t &modelToWorld, const mat4t &cameraToWorld, float n = 0.1f, float f = 10000.0f)
+    static mat4t build_projection_matrix(const mat4t &modelToWorld, const mat4t &cameraToWorld, float n = 0.1f, float f = 100000.0f)
     {
       // flip it around to transform from world to camera
       mat4t worldToCamera;
@@ -475,7 +475,7 @@ namespace octet {
     }
 
     // helper function for building a simple camera
-    static mat4t build_camera_matrices(mat4t &modelToCamera, mat4t &worldToCamera, const mat4t &modelToWorld, const mat4t &cameraToWorld, float n = 0.1f, float f = 10000.0f)
+    static mat4t build_camera_matrices(mat4t &modelToCamera, mat4t &worldToCamera, const mat4t &modelToWorld, const mat4t &cameraToWorld, float n = 0.1f, float f = 100000.0f)
     {
       // flip it around to transform from world to camera
       cameraToWorld.invertQuick(worldToCamera);

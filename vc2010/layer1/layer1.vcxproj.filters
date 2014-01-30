@@ -223,6 +223,12 @@
     <ClInclude Include="..\..\src\shaders\sky_box_shader.h">
       <Filter>octet\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\shaders\texture_shader_no_alpha.h">
+      <Filter>octet\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shaders\texture_shader_alpha.h">
+      <Filter>octet\shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\resources\mesh_builder.inl">

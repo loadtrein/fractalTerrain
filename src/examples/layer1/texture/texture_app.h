@@ -19,7 +19,7 @@ namespace octet {
   class texture_app : public octet::app {
     mat4t modelToWorld;              // this matrix converts from model space to world space
     mat4t cameraToWorld;             // this matrix converts from camera space to world space
-    texture_shader texture_shader_; // this builds a shader to use with textures
+    texture_shader_no_alpha texture_shader_; // this builds a shader to use with textures
     GLuint texture_handle_;         // this is an OpenGL texture handle which is used to draw the image.
 
   public:

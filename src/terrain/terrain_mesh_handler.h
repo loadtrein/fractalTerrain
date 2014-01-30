@@ -48,7 +48,7 @@ namespace octet {
 			textures[6] = resources::get_texture_handle(GL_RGB, "#111111");
 
 
-      skyboxMesh.make_cube(1000.0f);
+      skyboxMesh.make_cube(10000.0f);
       sky_box_textureObj = 0;
       createCubeMap();
 
@@ -162,10 +162,15 @@ namespace octet {
 			n3 = get_norm( size, i+1,   j, heightMap);
 			
 
-			m_builder->add_vertex(v0, n0, ((float)i/size), ((float)j/size));
+      m_builder->add_vertex(v0, n0, ((float)i/size), ((float)j/size));
       m_builder->add_vertex(v1, n1, ((float)i/size), ((float)(j+1)/size));
       m_builder->add_vertex(v2, n2, ((float)(i+1)/size), ((float)(j+1)/size));
       m_builder->add_vertex(v3, n3, ((float)(i+1)/size), ((float)j/size)); 
+
+      /*m_builder->add_vertex(v0, vec4(0,1,0,0), ((float)i/size), ((float)j/size));
+      m_builder->add_vertex(v1, vec4(0,1,0,0), ((float)i/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v2, vec4(0,1,0,0), ((float)(i+1)/size), ((float)(j+1)/size));
+      m_builder->add_vertex(v3, vec4(0,1,0,0), ((float)(i+1)/size), ((float)j/size)); */
 
 			
 			
@@ -290,6 +295,7 @@ namespace octet {
 
       sky_box_shader_.render(modelToProjection,modelToCamera,GL_TEXTURE7);
 
+      
       glDepthMask(GL_FALSE);
 
       skyboxMesh.render();
