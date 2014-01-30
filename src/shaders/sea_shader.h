@@ -51,15 +51,24 @@ namespace octet {
 		uniform float angle;
 		uniform int t_length;
 
+		const float _pi = 3.14159;
+
 		float rand(vec2 co){
 			return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+		}
+
+		float waveGenerator(vec2 direction, float amplitude, float wavelength, float speed, float x, float y) {
+			float frequency = 2*_pi/wavelength;
+			float phase = speed * frequency;
+			float theta = dot(direction, vec2(x, y));
+			return amplitude * sin(theta * frequency + angle * phase);
 		}
       
         void main() {
 		  pos_ = pos;
 		  color_ = color;
 		  uv_ = uv;
-//		  norm_ = normal;
+		  norm_ = normal;
 
 		  norm_ = (modelToCamera * vec4(normal,0.0)).xyz;
 		  tangent_ = (modelToCamera * vec4(tangent,0.0)).xyz;
@@ -69,21 +78,36 @@ namespace octet {
 		  float half_length =  float(t_length/2);
 		  float t_lengthf = float(t_length);
 
-		  vec2 wave_vector = vec2(0.5/2-uv.x, 0.5/2-uv.y);
-		  float wave = cos(angle - wave_vector.x  * (pos.x-half_length) - wave_vector.y  * (pos.z-half_length));
-		  
 		  vec3 nnoise = noise3(npos.xyz);
 		  float randPos = rand(vec2(pos.x, pos.z+angle/10000));
 
-		  vec3 new_norm = vec3(wave_vector.x, wave, wave_vector.y);
+		  vec2 wave_vector = vec2(0.5/2-uv.x, 0.5/2-uv.y);
+		  vec2 wave_vector_2 = vec2(uv.x, uv.y);
+		  
+		  // vec2 direction, float amplitude, float wavelength, float speed, float x, float y
+		  float w0 = waveGenerator( wave_vector_2, 0.3, 10.0,  0.2, (pos.x+half_length), (pos.z+half_length) );
+		  float w1 = waveGenerator( wave_vector_2, 0.1, 3.0, 0.1, pos.x, pos.z);
+		  float w2 = waveGenerator( wave_vector_2, 0.2, 0.2, 0.1, -pos.x, -pos.z);
+		  float w3 = waveGenerator( wave_vector_2, 0.2, 0.3, 0.1, -pos.x, pos.z);
+		  float w4 = waveGenerator( wave_vector_2, 0.1, 0.4, 0.2, pos.x, -pos.z);
+		  float w5 = waveGenerator( wave_vector_2, 5.0, t_length, 5.0, pos.x, pos.x);
+		  float w6 = waveGenerator( wave_vector_2, 6.0,   t_length, 4.0, pos.z, pos.z);
+		  float w7 = waveGenerator( wave_vector_2, 2.0,   t_length/2, 9.0, -pos.z, -pos.z);
+		  float w8 = waveGenerator( wave_vector_2, 3.0,   t_length/2, 5.0, -pos.x, pos.z);
+		  float w9 = waveGenerator( wave_vector, 0.5, 8.0, 0.2,(pos.x+half_length), (pos.z+half_length));
+	
+
+		  float final_wave = w0 + w1 + w2 + w3 + w4 + w5 + w6; //+ w7 + w8 + w9;
+		
+		  vec3 new_norm = normalize(vec3(wave_vector.x, final_wave, wave_vector.y));
 		  norm_ = (modelToCamera * vec4(new_norm,0)).xyz;
 
-		  vec4 new_pos = vec4(pos.x, pos.y + wave , pos.z, pos.w); 
+		  vec4 new_pos = vec4(pos.x, pos.y + final_wave, pos.z, pos.w); 
 		 
 		  gl_Position = modelToProjection * new_pos; 
 
 
-     // gl_Position = modelToProjection * pos_;
+
         }
       );
 
@@ -141,11 +165,11 @@ namespace octet {
 
       vec3 sky_box_Color = textureCube(sampler, reflectedDirection);
 
-			gl_FragColor.xyz = /*mix(
+			gl_FragColor.xyz = mix(
 				ambient_light * ambient.xyz +
 				diffuse_light * diffuse.xyz +
 				emission.xyz +
-				specular_light * specular.xyz , */sky_box_Color /*, 1.0)*/;
+				specular_light * specular.xyz , sky_box_Color , 1.0);
 
 			gl_FragColor.w = diffuse.w; 
         }
