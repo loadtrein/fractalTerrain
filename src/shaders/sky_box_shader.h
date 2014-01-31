@@ -43,7 +43,7 @@ namespace octet {
         color_ = color;
         uv_ = uv;
 
-        norm_ = (modelToCamera * vec4(normal,0)).xyz;
+        norm_ = (modelToCamera * vec4(normal,0.0)).xyz;
         gl_Position = modelToProjection * pos;
       }
       );
@@ -60,7 +60,7 @@ namespace octet {
 
 
       void main() {
-        gl_FragColor = textureCube(sampler, pos_);
+        gl_FragColor = textureCube(sampler, pos_.xyz);
       }
       );
 
@@ -85,8 +85,6 @@ namespace octet {
       shader::render();
 
       // set the uniforms
-      // glUniform4fv(emissive_color_1_index, 1, emissive_color_1.get());
-      // glUniform4fv(emissive_color_2_index, 1, emissive_color_2.get());
       glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get()); 
       glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get());
 
