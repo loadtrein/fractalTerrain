@@ -92,7 +92,7 @@ namespace octet {
 
 			  calculateDeltaHeight();
 
-		     generateVerticesWireFrameModel();
+		    generateVerticesWireFrameModel();
 	  
 			  create_meshes();
 
@@ -103,8 +103,6 @@ namespace octet {
 		}
 
 		void create_meshes() {
-
-			//sea_perturbation(100.0,100.0);
 
 			lower_perimeters();
 
@@ -196,29 +194,6 @@ namespace octet {
 		  }
 		}
 
-		void sea_perturbation(float f, float d){
-		  int u, v;
-      
-		  float temp [S_SEGMENTS][S_SEGMENTS];
-
-		  for (int i = 0; i != S_SEGMENTS; ++i){
-			for (int j = 0; j != S_SEGMENTS; ++j){
-
-			  u = i + (int)(perlinNoise.Noise(f * i / (float)S_SEGMENTS, f * j / (float)S_SEGMENTS, 0) * d);
-			  v = j + (int)(perlinNoise.Noise(f * i / (float)S_SEGMENTS, f * j / (float)S_SEGMENTS, 1) * d);
-			  if (u < 0) u = 0; if (u >= S_SEGMENTS) u = S_SEGMENTS - 1;
-			  if (v < 0) v = 0; if (v >= S_SEGMENTS) v = S_SEGMENTS - 1;
-			  temp[i][j]=seaMap[u][v].getY();
-			}
-		  }
-
-		  for (int i = 0; i != S_SEGMENTS; ++i){
-			for (int j = 0; j != S_SEGMENTS; ++j){
-			  seaMap[i][j].setY(temp[i][j]);
-			}
-		  }
-		}
-
 
 		//------------------------------------EROSION-----------------------------------------------------------------
 
@@ -260,7 +235,7 @@ namespace octet {
 						float di = heightMap[i][j].getY() - heightMap[i+u][j+v].getY();
 
 						if(di > talus){
-							heightMap[i+u][j+v].setY( heightMap[i+u][j+v].getY() + 0.3f*(dmax - talus) * (di/dtotal));
+							heightMap[i+u][j+v].setY( heightMap[i+u][j+v].getY() + 0.5*(dmax - talus) * (di/dtotal));
 					    } 
 					  }
 				  }
@@ -272,11 +247,10 @@ namespace octet {
 		}
 
 
-		//---------------------------------SMOOTHING FILTERS----------------------------------------------------------
+		//---------------------------------SMOOTHING FILTER----------------------------------------------------------
 
 		//Apply 3x3 box filter with smoothing parameter
 		void smooth3x3BoxFilter() {
-		  float k = 0.75;
 
 		  for(int i=0; i!=SEGMENTS;++i){
 			for(int j=0; j!=SEGMENTS;++j){
@@ -296,34 +270,9 @@ namespace octet {
 
 				}
 			  }
-			  heightMap[i][j].setY((total / count)* (1-k) +  heightMap[i][j].getY() * k);
+			  heightMap[i][j].setY(total / count);
 			}
 		  }
-		}
-
-
-		void smootFilterRowsColumnsDisplacement(){
-		  float k = 0.75;
-
-		  /* Rows, left to right */
-		  for(int i = 1;i < SEGMENTS; i++)
-			for (int j = 0;j < SEGMENTS; j++)
-			  heightMap[i][j].setY( heightMap[i-1][j].getY() * (1-k) + heightMap[i][j].getY() * k );
-
-		  /* Rows, right to left*/
-		  for(int i = SEGMENTS-2;i < -1; i--)
-			for (int j = 0;j < SEGMENTS; j++)
-			  heightMap[i][j].setY( heightMap[i+1][j].getY() * (1-k) +  heightMap[i][j].getY() * k);
-
-		  /* Columns, bottom to top */
-		  for(int i = 0;i < SEGMENTS; i++)
-			for (int j = 1;j < SEGMENTS; j++)
-			  heightMap[i][j].setY( heightMap[i][j-1].getY() * (1-k) +  heightMap[i][j].getY() * k);
-
-		  /* Columns, top to bottom */
-		  for(int i = 0;i < SEGMENTS; i++)
-			for (int j = SEGMENTS; j < -1; j--)
-			  heightMap[i][j].setY( heightMap[i][j+1].getY() * (1-k) +  heightMap[i][j].getY() * k );
 		}
 
 
@@ -679,35 +628,27 @@ namespace octet {
 		  }
 
 		  if(is_key_down(key_f1)){
-			printf("Rows and Columns Smoothed\n");
-			smootFilterRowsColumnsDisplacement();
-			generateVerticesWireFrameModel();
-      lower_perimeters();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+        printf("3x3 Box Smoothed\n");
+        smooth3x3BoxFilter();
+        generateVerticesWireFrameModel();
+        lower_perimeters();
+        terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f2)){
-			printf("3x3 Box Smoothed\n");
-			smooth3x3BoxFilter();
-			generateVerticesWireFrameModel();
-      lower_perimeters();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+        printf("PERTURBATION\n");
+        perturbation(10.0,10.0);
+        generateVerticesWireFrameModel();
+        lower_perimeters();
+        terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  if(is_key_down(key_f3)){
-			printf("PERTURBATION\n");
-			perturbation(10.0,10.0);
-			generateVerticesWireFrameModel();
-      lower_perimeters();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
-		  }
-
-		  if(is_key_down(key_f4)){
-			printf("THERMAL EROSION\n");
-			thermalErosion(4/(float)SEGMENTS);
-			generateVerticesWireFrameModel();
-      lower_perimeters();
-			terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
+        printf("THERMAL EROSION\n");
+        thermalErosion(4/(float)SEGMENTS);
+        generateVerticesWireFrameModel();
+        lower_perimeters();
+        terrain_mesh_handler_.create_mesh_from_map(SEGMENTS, *heightMap, 0);
 		  }
 
 		  //Regenerates terrain
