@@ -62,6 +62,8 @@ namespace octet {
     // information for our text
     bitmap_font font;
 
+    bool showText;
+
 	  public:
 		Landscape(int argc, char **argv) : app(argc, argv), font(512, 256, "assets/big.fnt") {}
 
@@ -535,7 +537,9 @@ namespace octet {
 
 		  this->debug = false;
 		  this->renderMode = 0;
-      wire = 0;
+      this->wire = 0;
+
+      this->showText = true;
 
 		}
 
@@ -723,6 +727,14 @@ namespace octet {
         }
       }
 
+      if(is_key_down('T')){
+        if(this->showText){
+          this->showText = false;
+        }else{
+          this->showText = true;
+        }
+      }
+
 		  if (is_key_down('1')) {
 			  obj_render = 0;
 		  }
@@ -768,17 +780,21 @@ namespace octet {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      char title[25];
 
-      sprintf(title, "--Terrain parameters--\n");
+      if(this->showText){
 
-      draw_text(texture_shader_, - 1.8, + 1.8, - 3 ,1.0f/256, title);
+        char title[25];
 
-      char text[100];
+        sprintf(title, "--Terrain parameters--\n");
 
-      sprintf(text, "Length: %d\nWidth: %d\nRoughness: %d",((int)this->terrain_length), ((int)this->terrain_width), ((int)this->randomHigh));
+        draw_text(texture_shader_, - 1.8, + 1.8, - 3 ,1.0f/256, title);
 
-      draw_text(texture_shader_, - 1.8, + 1.2, - 3 ,1.0f/256, text);
+        char text[100];
+
+        sprintf(text, "Length: %d\nWidth: %d\nRoughness: %d",((int)this->terrain_length), ((int)this->terrain_width), ((int)this->randomHigh));
+
+        draw_text(texture_shader_, - 1.8, + 1.2, - 3 ,1.0f/256, text);
+      }
 
 
 
@@ -788,10 +804,7 @@ namespace octet {
       		  } 
       }else{
 
-
-
-
-      terrain_mesh_handler_.render(modelToWorld, cameraToWorld, renderMode, min_height, deltaHeight, obj_render);
+        terrain_mesh_handler_.render(modelToWorld, cameraToWorld, renderMode, min_height, deltaHeight, obj_render);
 
       }
 
