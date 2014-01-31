@@ -90,17 +90,17 @@ namespace octet {
 		  float w2 = waveGenerator( wave_vector_2, 0.2, 0.2, 0.1, -pos.x, -pos.z);
 		  float w3 = waveGenerator( wave_vector_2, 0.2, 0.3, 0.1, -pos.x, pos.z);
 		  float w4 = waveGenerator( wave_vector_2, 0.1, 0.4, 0.2, pos.x, -pos.z);
-		  float w5 = waveGenerator( wave_vector_2, 5.0, t_length, 5.0, pos.x, pos.x);
-		  float w6 = waveGenerator( wave_vector_2, 6.0,   t_length, 4.0, pos.z, pos.z);
-		  float w7 = waveGenerator( wave_vector_2, 2.0,   t_length/2, 9.0, -pos.z, -pos.z);
-		  float w8 = waveGenerator( wave_vector_2, 3.0,   t_length/2, 5.0, -pos.x, pos.z);
+		  float w5 = waveGenerator( wave_vector_2, 5.0, t_lengthf, 5.0, pos.x, pos.x);
+		  float w6 = waveGenerator( wave_vector_2, 6.0,   t_lengthf, 4.0, pos.z, pos.z);
+		  float w7 = waveGenerator( wave_vector_2, 2.0,  half_length, 9.0, -pos.z, -pos.z);
+		  float w8 = waveGenerator( wave_vector_2, 3.0,   half_length, 5.0, -pos.x, pos.z);
 		  float w9 = waveGenerator( wave_vector, 0.5, 8.0, 0.2,(pos.x+half_length), (pos.z+half_length));
 	
 
 		  float final_wave = w0 + w1 + w2 + w3 + w4 + w5 + w6; //+ w7 + w8 + w9;
 		
 		  vec3 new_norm = normalize(vec3(wave_vector.x, final_wave, wave_vector.y));
-		  norm_ = (modelToCamera * vec4(new_norm,0)).xyz;
+		  norm_ = (modelToCamera * vec4(new_norm,0.0)).xyz;
 
 		  vec4 new_pos = vec4(pos.x, pos.y + final_wave, pos.z, pos.w); 
 		 
@@ -158,16 +158,16 @@ namespace octet {
 
       vec4 eyeDir = pos_- cameraToWorld;
 			
-      vec3 reflectedDirection = normalize(reflect(normalize(eyeDir), normalize(norm_)));
+      vec3 reflectedDirection = normalize(reflect(normalize(eyeDir.xyz), normalize(norm_)));
       //reflectedDirection.y = -reflectedDirection.y;
 
-      vec3 sky_box_Color = textureCube(sampler, reflectedDirection);
+      vec4 sky_box_Color = textureCube(sampler, reflectedDirection);
 
 			gl_FragColor.xyz = mix(
 				ambient_light * ambient.xyz +
 				diffuse_light * diffuse.xyz +
 				emission.xyz +
-				specular_light * specular.xyz , sky_box_Color , 1.0);
+				specular_light * specular.xyz , sky_box_Color.xyz , 1.0);
 
 			gl_FragColor.w = diffuse.w; 
         }
@@ -201,8 +201,6 @@ namespace octet {
       shader::render();
 
         // set the uniforms
-	    // glUniform4fv(emissive_color_1_index, 1, emissive_color_1.get());
-	    // glUniform4fv(emissive_color_2_index, 1, emissive_color_2.get());
 	    glUniformMatrix4fv(modelToProjection_index, 1, GL_FALSE, modelToProjection.get()); 
 	    glUniformMatrix4fv(modelToCamera_index, 1, GL_FALSE, modelToCamera.get());
       glUniformMatrix4fv(cameraToWorld_index,1,GL_FALSE,cameraToWorld.get());
